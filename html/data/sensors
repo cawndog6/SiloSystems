@@ -1,0 +1,28 @@
+{
+    "sensors": [
+        {"deviceId":"4438-062d",
+        "deviceName":"Bio Lab Raspberry Pi",
+        "sensorId":"0b",
+        "sensorName":"Light Level (lux)"},
+
+        {"deviceId":"4438-062d",
+        "deviceName":"Bio Lab Raspberry Pi",
+        "sensorId":"6b",
+        "sensorName":"Relative Humidity (%)"},
+
+        {"deviceId":"4438-062d",
+        "deviceName":"Bio Lab Raspberry Pi",
+        "sensorId":"70",
+        "sensorName":"Temperature (\u00b0C)"},
+
+        {"deviceId":"7c2a-bc4c",
+        "deviceName":"Greenhouse Raspberry Pi",
+        "sensorId":"44",
+        "sensorName":"Relative Humidity (%)"},
+        
+        {"deviceId":"7c2a-bc4c",
+        "deviceName":"Greenhouse Raspberry Pi",
+        "sensorId":"58",
+        "sensorName":"Temperature (\u00b0C)"}
+    ]
+}

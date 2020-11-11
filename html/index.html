@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Silo Systems Home</title>
+        <link rel="stylesheet" href="style.css">
+        <script type="text/javascript" src="main.js"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+    <body>
+        <header>
+            <a href="/" id="title-link"><img src="logo.png" id="logo">Silo Systems</a>
+            <nav>
+                <span id="current-user">You are not logged in. </span>
+                (<a href="#" id="show-login-link" onclick="ShowLogin();">Log in</a><a href="#" id="logout-link" class="hidden" onclick="Logout();">Log out</a>)
+            </nav>
+        </header>
+        <main>
+            <table id="sensor-table" class="hidden">
+                <thead>
+                    <tr><th>Device ID</th><th>Device Nickname</th><th>Sensor ID</th><th>Sensor Type</th><th>View Data</th><th>Download Data</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="data-chart"></div>
+        </main>
+        <footer>
+            Copyright 2020 Silo Systems and the University of Idaho
+        </footer>
+        <template>
+            <div id="login">
+                <a href="#" id="unshow-login-link" onclick="UnshowLogin();">&#x2716;</a>
+                <div id="login-box">
+                    <strong>Log in to Silo Systems</strong>
+                    <br><br>
+                    <form id="login-form" action="#" onsubmit="ValidateLogin(); return false;">
+                        <input type="text" name="username" placeholder="Username" required>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <label>Remember me? <input type="checkbox" name="remember"></label>
+                        <input type="submit" value="Submit">
+                    </form>
+                    <span id="login-failure" class="hidden">
+                        Either your username or password was incorrect.
+                        <br>Please try again.
+                    </span>
+                </div>
+            </div>
+        </template>
+    </body>
+</html>
