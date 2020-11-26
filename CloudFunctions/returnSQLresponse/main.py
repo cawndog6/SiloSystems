@@ -62,6 +62,7 @@ def returnSQLresponse(request):
             '","sensorName":"' + str(res[3]) + '","data":[';
         for r in results:
             print("counter = {}".format(counter));
+            print("hi");
             if counter < (numRows - 1): 
                 JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
                 counter = counter + 1;
