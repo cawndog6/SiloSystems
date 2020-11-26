@@ -67,6 +67,7 @@ def returnSQLresponse(request):
                 counter = counter + 1;
             else:
                 JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"}ffffffffffffffffffffff';
+                counter = counter + 1;
         JSONresults += ']}';
         return JSONresults;
     else: 
