@@ -5,9 +5,7 @@ from flask import escape
 
 def returnSQLresponse(request):
 
-    # Remember - storing secrets in plaintext is potentially unsafe. Consider using
-    # something like https://cloud.google.com/secret-manager/docs/overview to help keep
-    # secrets secret.
+    # Remember - Might want to come up with a better solution than storing this password in plain text
     db_user = "root"
     db_pass = "FbtNb8rkjArEwApg"
     db_name = "site1"
@@ -57,6 +55,9 @@ def returnSQLresponse(request):
         results = conn.execute(sqlalchemy.text("SELECT * FROM Temperatures;"));
     res= results.fetchone();
 
-    JSONresults = '{"deviceID":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + '","sensorName":"' + str(res[3]) + '","data":[';
-    
+    JSONresults = '{"deviceID":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + \
+        '","sensorName":"' + str(res[3]) + '","data":[';
+    for r in res:
+        JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
+    JSONresults += ']}';
     return JSONresults;
