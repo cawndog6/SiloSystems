@@ -1,6 +1,8 @@
 #Author(s): Connor Williams
-#Date: 11/26/2020
+#Date: 11/24/2020
 #Purpose: Take in arguments from an HTTP request for sensor and deviceId and run a sql query to return information from that sensor + device in JSON format
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/returnSQLresponse?sensor=Temperatures&deviceID=12810
+#input: sensor & deviceID
 import pymysql
 import sqlalchemy
 
