@@ -61,6 +61,7 @@ def returnSQLresponse(request):
         JSONresults = '{"deviceId":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + \
             '","sensorName":"' + str(res[3]) + '","data":[';
         for r in results:
+            print("counter = {}".format(numRows));
             if counter < (numRows - 1): 
                 JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
                 counter = counter + 1;
