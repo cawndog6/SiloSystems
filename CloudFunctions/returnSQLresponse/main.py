@@ -57,10 +57,8 @@ def returnSQLresponse(request):
     numRows = len(results._saved_cursor._result.rows);
     counter = 0;
     if numRows > 0:
-        res= results.fetchone();
-        res= results.fetchone();
-        res= results.fetchone();
-        res= results.fetchone();
+        tempResults = results;
+        res= tempResults.fetchone();
         JSONresults = '{"deviceId":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + \
             '","sensorName":"' + str(res[3]) + '","data":[';
         for r in results:
