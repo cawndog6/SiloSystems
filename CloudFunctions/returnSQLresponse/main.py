@@ -55,10 +55,10 @@ def returnSQLresponse(request):
         results = conn.execute(sqlalchemy.text("SELECT * FROM Temperatures;"));
     numRows = results.rowcount
     res= results.fetchone();
-    JSONresults = '{"deviceID":"' + str(res[0].items()) + '","deviceName":"' + str(res[1].items()) + '","sensorId":"' + str(res[2].items()) + \
+    JSONresults = '{"deviceId":"' + str(res[0].items()) + '","deviceName":"' + str(res[1].items()) + '","sensorId":"' + str(res[2].items()) + \
         '","sensorName":"' + str(res[3]) + '","data":[';
     for r in results:
         JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
     JSONresults += ']}';
-    #return JSONresults;
-    return numRows;
+    return JSONresults;
+    #return numRows;
