@@ -58,6 +58,6 @@ def returnSQLresponse(request):
     JSONresults = '{"deviceID":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + \
         '","sensorName":"' + str(res[3]) + '","data":[';
     for r in res:
-        JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
+        #JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
     JSONresults += ']}';
     return JSONresults;
