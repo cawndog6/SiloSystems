@@ -1,3 +1,6 @@
+#Author(s): Connor Williams
+#Date: 11/26/2020
+#Purpose: Take in arguments from an HTTP request for sensor and deviceId and run a sql query to return information from that sensor + device in JSON format
 import pymysql
 import sqlalchemy
 
