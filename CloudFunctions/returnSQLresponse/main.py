@@ -53,11 +53,12 @@ def returnSQLresponse(request):
     with pool.connect() as conn:
        # results = "hello world";
         results = conn.execute(sqlalchemy.text("SELECT * FROM Temperatures;"));
+    numRows = results.rowcount
     res= results.fetchone();
-
-    JSONresults = '{"deviceID":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + \
+    JSONresults = '{"deviceID":"' + str(res[0].items()) + '","deviceName":"' + str(res[1].iutems()) + '","sensorId":"' + str(res[2].items()) + \
         '","sensorName":"' + str(res[3]) + '","data":[';
     for r in results:
         JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
     JSONresults += ']}';
-    return JSONresults;
+    #return JSONresults;
+    return numRows;
