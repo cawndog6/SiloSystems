@@ -1,5 +1,6 @@
 import pymysql
 import sqlalchemy
+
 from flask import escape
 
 def returnSQLresponse(request):
@@ -54,14 +55,8 @@ def returnSQLresponse(request):
     with pool.connect() as conn:
        # results = "hello world";
         results = conn.execute(sqlalchemy.text("SELECT * FROM Temperatures;"));
-        # results = conn.execute(sqlalchemy.text("select * from {sensor};".format(sensor)));
-        # return result.scalar()
-        # for row in result:
-        #     textResult = textResult + "ID: " + row['id'] + " | Name: " + row['name'] + " | Value: " + row['value'] + "\n"
-        #     print("id:", row['id'])
-        #     print("name:", row['name'])
-        #     print("value:", row['value'])
-        # # return result
+    res= results.fetchone();
 
+    JSONresults = '{"deviceID":"' + str(res[0]) + '","deviceName":"' + str(res[1]) + '","sensorId":"' + str(res[2]) + '","sensorName":"' + str(res[3]) + '","data":[';
     
-    return results[0][0];
+    return JSONresults;
