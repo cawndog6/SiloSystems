@@ -67,14 +67,14 @@ def returnSQLresponse(request):
         for r in results:
             print("counter = {}".format(counter));
             if headerProduced == 0:
-                JSONresults = '{"deviceId":"' + str(r[0]) + '","deviceName":"' + str(r[1]) + '","sensorId":"' + str(r[2]) + \
-                    '","sensorName":"' + str(r[3]) + '","data":[';
+                JSONresults = '{"deviceId":' + str(r[0]) + ',"deviceName":"' + str(r[1]) + '","sensorId":' + str(r[2]) + \
+                    ',"sensorName":"' + str(r[3]) + '","data":[';
                 headerProduced = 1;
             if counter < (numRows - 1): 
-                JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"},';
+                JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '},';
                 counter = counter + 1;
             else:
-                JSONresults += '{"date":"' + str(r[4]) + '","value":"' + str(r[5]) + '"}';
+                JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '}';
                 counter = counter + 1;
         JSONresults += ']}';
         return JSONresults;
