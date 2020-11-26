@@ -51,7 +51,7 @@ def returnSQLresponse(request):
     
     #execute sql statement
     with pool.connect() as conn:
-        results = conn.execute(sqlalchemy.text("SELECT * FROM Temperatures;"));
+        results = conn.execute(sqlalchemy.text("SELECT * FROM {};".format(sensor)));
 
     #assemble JSON from results to be returned
     numRows = len(results._saved_cursor._result.rows);
