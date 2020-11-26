@@ -32,7 +32,7 @@ def returnSQLresponse(request):
         sensor = request_args['sensor']
     else:
         sensor = -1
-
+    print("deviceID = {}".format(deviceID));
     #connect to the database
     pool = sqlalchemy.create_engine(
         # Equivalent URL:
@@ -77,5 +77,5 @@ def returnSQLresponse(request):
         JSONresults += ']}';
         return JSONresults;
     else: 
-        return 204;
+        return str(204);
     #return JSONresults;
