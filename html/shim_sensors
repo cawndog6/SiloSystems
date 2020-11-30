@@ -1,0 +1,13 @@
+{
+    "sensors": [
+        {"deviceId":12810,
+        "deviceName":"Bio-Lab Raspberri Pi 1",
+        "sensorId":1,
+        "sensorName":"Temperature"},
+
+        {"deviceId":12811,
+        "deviceName":"Bio-Lab Raspberri Pi 2",
+        "sensorId":1,
+        "sensorName":"Temperature"}
+    ]
+}

@@ -5,6 +5,8 @@ let logLevel = level.DEBUG;
 
 let loggedIn = false;
 
+let apiRoot = "https://us-west2-silo-systems-292622.cloudfunctions.net";
+
 window.addEventListener("load", StartLoad);
 
 //################## UTILITY FUNCTIONS ####################
@@ -97,7 +99,7 @@ function DrawLineChart(dataTable, x_title, y_title, width, height, vAxis_fmt) {
 function StartLoad() {
     ValidateUser();
 
-    Promise.all([google.charts.load('current', {'packages':['corechart']}),Get("http://localhost/data/sensors")])
+    Promise.all([google.charts.load('current', {'packages':['corechart']}),Get("shim_sensors")])
         .then(DrawSensorTable);
 }
 
@@ -124,7 +126,7 @@ function DrawSensorTable(response) {
         let viewCell = row.insertCell();
         let viewLink = document.createElement("a");
         viewLink.href = "#";
-        viewLink.id = `v-${sensor.deviceId}-${sensor.sensorId}`;
+        viewLink.id = `v-${sensor.deviceId}`; //-${sensor.sensorId}`;
         viewLink.onclick = ViewSensor;
         viewLink.appendChild(document.createTextNode("View Data"));
         viewCell.appendChild(viewLink);
@@ -132,7 +134,7 @@ function DrawSensorTable(response) {
         let downloadCell = row.insertCell();
         let downloadLink = document.createElement("a");
         downloadLink.href = "#";
-        downloadLink.id = `v-${sensor.deviceId}-${sensor.sensorId}`;
+        downloadLink.id = `d-${sensor.deviceId}`; //-${sensor.sensorId}`;
         downloadLink.onclick = DownloadSensor;
         downloadLink.appendChild(document.createTextNode("Download Data"));
         downloadCell.appendChild(downloadLink);
@@ -150,7 +152,7 @@ function ViewSensor(event) {
     let fullId = event.target.id;
     let id = fullId.substring(2);
 
-    Get(`http://localhost/data/${id}`).then(function(response) {
+    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then(function(response) {
         DrawLineChart(response.data.map(row => [new Date(row.date), row.value]), "Date", response.sensorName, "100%", "400px", (response.sensorName.indexOf("%") > -1 ? "percent" : "decimal"))
     });
 }
@@ -166,7 +168,7 @@ function DownloadSensor(event) {
 
     let today = FormatDate(new Date());
 
-    Get(`http://localhost/data/${id}`).then(function(response) {
+    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then(function(response) {
         let download = `Date,${response.sensorName}\n`;
         download += response.data.map(row => `${FormatDate(new Date(row.date))},${row.value}`).join('\n');
 
