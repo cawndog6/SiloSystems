@@ -77,7 +77,7 @@ def returnSQLresponse(request):
                 JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '}';
                 counter = counter + 1;
         JSONresults += ']}';
-        return JSONresults;
+        return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'});
     else: 
-        return str(204);
+        return ('', 204, {'Access-Control-Allow-Origin':'*'});
     #return JSONresults;
