@@ -197,14 +197,12 @@ function UnshowLogin() {
 
 function ValidateLogin() {
     let form = document.getElementById("login-form");
-    let correctUsernames = ["ben","connor","lucas"];
-    let correctPasswords = ["ben","connor","lucas"];
 
     let username = form.elements.username.value;
     let password = form.elements.password.value;
     let remember = form.elements.remember.checked;
 
-    if(correctUsernames.indexOf(username) > -1 && password == correctPasswords[correctUsernames.indexOf(username)]) {
+    if(username == password) {
         Log(level.DEBUG, `Successful ${(remember) ? "persistent":"session"} login for user ${username}`);
         let today = new Date();
         let todayPlus30 = new Date();
