@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Silo Systems Home</title>
+        <title>Lab Companion Home</title>
         <link rel="stylesheet" href="style.css">
-        <script type="text/javascript" src="main.js"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-auth.js"></script>
+        <script type="text/javascript" src="main.js"></script>
+        <script type="text/javascript" src="account.js"></script>
+        <script type="text/javascript">
+            function StartLoad() {
+                UpdateUserDisplay();
+
+                Promise.all([
+                    google.charts.load('current', {'packages':['corechart']}),
+                    Get("shim_sensors")
+                ]).then(DrawSensorTable);
+            }
+
+            
+        window.addEventListener("load", StartLoad);
+        </script>
     </head>
     <body>
         <header>
-            <a href="/" id="title-link"><img src="logo.png" id="logo">Silo Systems</a>
+            <a href="/" id="title-link"><img src="logo.png" id="logo">Silo Systems Lab Companion</a>
             <nav>
                 <span id="current-user">You are not logged in. </span>
                 (<a href="#" id="show-login-link" onclick="ShowLogin();">Log in</a><a href="#" id="logout-link" class="hidden" onclick="Logout();">Log out</a>)
@@ -30,18 +46,28 @@
             <div id="login">
                 <a href="#" id="unshow-login-link" onclick="UnshowLogin();">&#x2716;</a>
                 <div id="login-box">
-                    <strong>Log in to Silo Systems</strong>
-                    <br><br>
-                    <form id="login-form" action="#" onsubmit="ValidateLogin(); return false;">
-                        <input type="text" name="username" placeholder="Username" required>
+                    <form id="login-form" action="#" onsubmit="Login(); return false;" class="accountForm">
+                        <strong>Log in to Lab Companion</strong>
+                        <br><br>
+                        <input type="email" name="user" placeholder="Email address" required>
                         <input type="password" name="password" placeholder="Password" required>
                         <label>Remember me? <input type="checkbox" name="remember"></label>
                         <input type="submit" value="Submit">
+                        <input type="button" value="Sign up as a new user" onclick="ShowSignup();">
                     </form>
-                    <span id="login-failure" class="hidden">
-                        Either your username or password was incorrect.
+                    <form id="signup-form" action="#" onsubmit="Signup(); return false;" class="hidden accountForm">
+                        <strong>Sign up for Lab Companion</strong>
+                        <br><br>
+                        <input type="email" name="user" placeholder="Email address" required>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <input type="password" name="passwordConfirmation" placeholder="Password (again)" required>
+                        <input type="submit" value="Submit">
+                        <input type="button" value="Log in to an existing account" onclick="UnshowSignup()">
+                    </form>
+                    <div id="login-error-box" class="hidden">
+                        <span id="login-error-box-text"></span>
                         <br>Please try again.
-                    </span>
+                    </div>
                 </div>
             </div>
         </template>
