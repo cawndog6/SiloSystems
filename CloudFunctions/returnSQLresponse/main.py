@@ -10,7 +10,6 @@ from flask import escape
 
 def returnSQLresponse(request):
 
-    # Remember - Might want to come up with a better solution than storing this password in plain text
     db_user = "root"
     db_pass = "FbtNb8rkjArEwApg"
     db_name = "site1"
