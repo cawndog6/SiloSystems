@@ -49,7 +49,7 @@ def getAvailableSites(request):
       results = conn.execute(sqlalchemy.text("SELECT site_id, role_id FROM site_user_role WHERE site_user_role.uid = {};".format(uid)))
       numRows = len(results._saved_cursor._result.rows)
       if numRows < 1:
-         return ('User is not authorized on any sites', 404, {Access-Control-Allow_Origin':'*'}) 
+         return ('', 404, {Access-Control-Allow_Origin':'*'}) 
       else:
          JSONresults = jsonify({'result': [dict(row) for row in result]})
          return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
