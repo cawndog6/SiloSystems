@@ -52,6 +52,6 @@ def getAvailableSites(request):
          return ('', 404, {'Access-Control-Allow_Origin':'*'});
       else:
          JSONresults = jsonify({'result': [dict(row) for row in result]})
-         return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'});
+         return (str(JSONresults), 200, {'Access-Control-Allow-Origin':'*'});
 
 
