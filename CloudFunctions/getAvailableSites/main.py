@@ -1,13 +1,13 @@
 #Author(s): Connor Williams
-#Date: 1/3/2021
-#Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to add the site to the user/site management database. Also adds the users uid to the site_user_role table as the site owner
+#Date: 1/7/2021
+#Purpose: Take in arguments from an HTTP request for uid and run sql query to return sites that the user is a member of and allowed to access
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/returnSQLresponse?sensor=Temperatures&deviceID=12810
 #input: site_name and uid
 import pymysql
 import sqlalchemy
+from flask import jsonify
 
-
-def addUserToSite(request):
+def getAvailableSites(request):
 
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
@@ -18,22 +18,11 @@ def addUserToSite(request):
    #get arguments to http request
    request_args = request.args
 
-   if request_args and 'new_user_email' in request_args:
-      user_email = request_args['new_user_email']
+   if request_args and 'uid' in request_args:
+      uid = request_args['uid']
    else: 
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
-   if request_args and 'role_id' in request_args:
-      role_id = request_args['role_id']
-   else
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
-   if request_args and 'site_name' in request_args:
-      site_name = request_args['site_id']
-   else
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
-   if request_args and 'requestor_uid' in request_args:
-      requestor_uid = request_args['requestor_uid']
-   else:
-      return ('', 400, {Access-Control-Allow_Origin':'*'})
+
 
       
    #connect to the database
@@ -57,16 +46,11 @@ def addUserToSite(request):
    #execute sql statements
    with pool.connect() as conn:
       #check requestor_uid is authenticated as site owner to add new user
-      result = conn.execute(sqlalchemy.text("SELECT site_id FROM site INNER JOIN site_user_role ON site.site_id = site_user_role.site_id WHERE site_user_role.uid = {} AND site_user_role.role_id = 0 AND  site.site_name = '{}';".format(requestor_uid, site_name)))
+      results = conn.execute(sqlalchemy.text("SELECT site_id, role_id FROM site_user_role WHERE site_user_role.uid = {};".format(uid)))
       if numRows = len(results._saved_cursor._result.rows) == 0:
-         return ('Site does not exist or requestor is not an authorized owner of the site', 403, {Access-Control-Allow_Origin':'*'}) 
+         return ('User is not authorized on any sites', 404, {Access-Control-Allow_Origin':'*'}) 
       else:
-         r = fetchone(result)
+         JSONresults = jsonify({'result': [dict(row) for row in result]})
+         return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
 
-
-
-
-
-
-   return ('success', 200, {Access-Control-Allow-Origin':'*'})
 

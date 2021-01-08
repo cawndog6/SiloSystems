@@ -17,14 +17,12 @@ def createNewSite(request):
     cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
     #get arguments to http request
-    request_json = request.get_json(silent=True)
     request_args = request.args
 
     if request_args and 'site_name' in request_args:
         site_name = request_args['site_name']
     else: 
         return ('', 400, {'Access-Control-Allow-Origin':'*'})
-
     if request_args and 'uid' in request_args:
         uid = request_args['uid']
     else:
@@ -43,8 +41,7 @@ def createNewSite(request):
                     db_socket_dir,  # e.g. "/cloudsql"
                     cloud_sql_connection_name)  # i.e "<PROJECT-NAME>:<INSTANCE-REGION>:<INSTANCE-NAME>"
             }
-        ),
-        # ... Specify additional properties here.
+        )
 
     )
     
