@@ -24,7 +24,7 @@ def createNewSite(request):
     else: 
         return ('', 400, {'Access-Control-Allow-Origin':'*'})
     if request_args and 'uid' in request_args:
-        uid = request_args['uid']
+        uid = request_args['uid'];
     else:
         return ('', 400, {Access-Control-Allow_Origin':'*'})
     #connect to the database
@@ -55,5 +55,5 @@ def createNewSite(request):
         #add user to site_user_role as the site owner
         role_id = 0
         conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, {}, {});".format(site_id, uid, role_id)))
-    return ('success', 200, {Access-Control-Allow-Origin':'*'})
+    return ('success', 200, {Access-Control-Allow-Origin':'*'});
 
