@@ -1,8 +1,9 @@
 #Author(s): Connor Williams
 #Date: 1/7/2021
 #Purpose: Take in arguments from an HTTP request for uid and run sql query to return sites that the user is a member of and allowed to access
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/returnSQLresponse?sensor=Temperatures&deviceID=12810
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites?uid=hdsfjgkhlsdkhfg
 #input: site_name and uid
+#output: Returned string will look something like {"result":[{"role_id":0,"site_id":2}]}
 import pymysql
 import sqlalchemy
 from flask import jsonify
@@ -52,7 +53,6 @@ def getAvailableSites(request):
          return ('', 404, {'Access-Control-Allow_Origin':'*'})
       else:
          JSONresults = jsonify({'result': [dict(row) for row in results]})
-         #print(JSONresults)
          return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
 
 
