@@ -11,7 +11,7 @@ def getAvailableSites(request):
 
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
-   db_name = "site-user-management"
+   db_name = "site-user_management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
@@ -46,7 +46,7 @@ def getAvailableSites(request):
    #execute sql statements
    with pool.connect() as conn:
       #check requestor_uid is authenticated as site owner to add new user
-      #results = conn.execute(sqlalchemy.text("SELECT site_id, role_id FROM site_user_role WHERE site_user_role.uid = {};".format(uid)))
+      results = conn.execute(sqlalchemy.text("SELECT site_id, role_id FROM site_user_role WHERE site_user_role.uid = {};".format(uid)))
       numRows = len(results._saved_cursor._result.rows);
       if numRows < 1:
          return ('', 404, {'Access-Control-Allow_Origin':'*'});
