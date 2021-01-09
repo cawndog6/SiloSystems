@@ -52,7 +52,7 @@ def getAvailableSites(request):
          return ('', 404, {'Access-Control-Allow_Origin':'*'})
       else:
          JSONresults = jsonify({'result': [dict(row) for row in results]})
-         print("{}".format(JSONresults))
-         return ('hello', 200, {'Access-Control-Allow-Origin':'*'})
+         #print(JSONresults)
+         return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
 
 
