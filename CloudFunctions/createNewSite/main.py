@@ -42,7 +42,7 @@ def createNewSite(request):
     )
     
     #execute sql statements
-   with pool.connect() as conn:
+    with pool.connect() as conn:
         #Add new site in database
         #Check if site already exists for the uid (owner)
         result = conn.execute(sqlalchemy.text("SELECT * FROM site INNER JOIN site_user_role on site.site_id = site_user_role.site_id WHERE site.site_name = '{}' AND site_user_role.uid = '{}';".format(site_name, uid)))
