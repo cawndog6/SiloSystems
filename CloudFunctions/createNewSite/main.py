@@ -61,4 +61,7 @@ def createNewSite(request):
             #add user to site_user_role as the site owner
             role_id = 0
             conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, '{}', {});".format(int(site_id), uid, role_id)))
-            return ('', 201, {'Access-Control-Allow-Origin':'*'})
+            
+        conn.execute("CREATE DATABASE {}{};".format(site_name, site_id))
+        return ('', 201, {'Access-Control-Allow-Origin':'*'})
+        
