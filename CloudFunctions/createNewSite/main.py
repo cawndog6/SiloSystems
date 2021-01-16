@@ -24,8 +24,8 @@ def createNewSite(request):
     if request_args and 'uid' in request_args:
         uid = request_args['uid']
 
-   #connect to the database
-   pool = sqlalchemy.create_engine(
+    #connect to the database
+    pool = sqlalchemy.create_engine(
         # Equivalent URL:
         #mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=<socket_path>/<cloud_sql_instance_name>
         sqlalchemy.engine.url.URL(
@@ -37,9 +37,9 @@ def createNewSite(request):
             "unix_socket": "{}/{}".format(
                 db_socket_dir,  # e.g. "/cloudsql"
                 cloud_sql_connection_name)  # i.e "<PROJECT-NAME>:<INSTANCE-REGION>:<INSTANCE-NAME>"
-         }
-      )
-   )
+            }
+        )
+    )
     
     #execute sql statements
    with pool.connect() as conn:
