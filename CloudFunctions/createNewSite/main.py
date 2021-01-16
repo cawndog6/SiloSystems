@@ -11,14 +11,14 @@ from flask import escape
 
 def createNewSite(request):
 
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
-   db_name = "site-user-management"
-   db_socket_dir = "/cloudsql"
-   cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
+    db_user = "root"
+    db_pass = "FbtNb8rkjArEwApg"
+    db_name = "site-user-management"
+    db_socket_dir = "/cloudsql"
+    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
-   #get arguments to http request
-   request_args = request.args
+    #get arguments to http request
+    request_args = request.args
     if request_args and 'site_name' in request_args:
         site_name = request_args['site_name']
     if request_args and 'uid' in request_args:
