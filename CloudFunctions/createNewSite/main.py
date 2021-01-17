@@ -62,6 +62,6 @@ def createNewSite(request):
             role_id = 0
             conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, '{}', {});".format(int(site_id), uid, role_id)))
             
-       # conn.execute("CREATE DATABASE {}{};".format(site_name, site_id))
+        conn.execute("CREATE DATABASE {}{};".format(site_name, site_id))
         return ('', 201, {'Access-Control-Allow-Origin':'*'})
         
