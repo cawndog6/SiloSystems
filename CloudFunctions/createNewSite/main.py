@@ -13,7 +13,7 @@ def createNewSite(request):
 
     db_user = "root"
     db_pass = "FbtNb8rkjArEwApg"
-    db_name = "site-user-management"
+    db_name = "site-user_management"
     db_socket_dir = "/cloudsql"
     cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
