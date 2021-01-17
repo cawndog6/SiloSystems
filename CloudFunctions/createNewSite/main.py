@@ -1,7 +1,7 @@
 #Author(s): Connor Williams
 #Date: 1/3/2021
 #Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to add the site to the user/site management database. Also adds the users uid to the site_user_role table as the site owner
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/returnSQLresponse?sensor=Temperatures&deviceID=12810
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewSite?site_name=newSiteName&uid=abcdabcd
 #input: site_name and uid
 #output: returns status code 500 if server cannot create new site or 201 on success
 import pymysql
@@ -62,6 +62,6 @@ def createNewSite(request):
             role_id = 0
             conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, '{}', {});".format(int(site_id), uid, role_id)))
             
-        conn.execute("CREATE DATABASE {}{};".format(site_name, site_id))
+       # conn.execute("CREATE DATABASE {}{};".format(site_name, site_id))
         return ('', 201, {'Access-Control-Allow-Origin':'*'})
         
