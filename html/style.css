@@ -22,6 +22,11 @@ header,footer {
     min-height: 30px;
     line-height: 5vh;
 }
+footer {
+    bottom: 0;
+    position: fixed;
+    width: 100vw;
+}
 header {
     top: 0px;
     background-color: #ccc;
@@ -76,31 +81,34 @@ div#login-box {
     background-color: white;
     position: relative;
     height: 40vh;
-    min-height: 380px;
+    min-height: 420px;
     margin: auto;
     box-sizing: border-box;
     padding: 40px;
     top: 30vh;
     text-align: center;
 }
-form#login-form {
+div.showLoginError#login-box {
+    min-height: 460px;
+}
+form.accountForm {
     width: 80%;
     margin-left: auto;
     margin-right: auto;
 }
-form#login-form input {
+form.accountForm input {
     height: 3em;
     width: 100%;
     margin: 10px 0;
 }
-form#login-form input[type="checkbox"] {
-    height: 4em;
+form.accountForm input[type="checkbox"] {
+    height: 5em;
     text-align: center;
     margin: 0px 10px;
     vertical-align: middle;
     width: 4ch;
 }
-span#login-failure {
+div#login-error-box {
     color: red;
 }
 div#data-chart {
