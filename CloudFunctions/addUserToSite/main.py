@@ -59,9 +59,9 @@ def addUserToSite(request):
       #check requestor_uid is authenticated as site owner to add new user
       result = conn.execute(sqlalchemy.text("SELECT site_id FROM site INNER JOIN site_user_role ON site.site_id = site_user_role.site_id WHERE site_user_role.uid = {} AND site_user_role.role_id = 0 AND  site.site_name = '{}';".format(requestor_uid, site_name)))
       if numRows = len(results._saved_cursor._result.rows) == 0:
-         return ('Site does not exist or requestor is not an authorized owner of the site', 403, {Access-Control-Allow_Origin':'*'}) 
+         return ('Site does not exist or requestor is not an authorized owner of the site', 403, {'Access-Control-Allow_Origin':'*'}) 
       else:
-         r = fetchone(result)
+         r = result.fetchone()
 
 
 

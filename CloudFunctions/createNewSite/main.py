@@ -59,7 +59,7 @@ def createNewSite(request):
                     greatest_id = int(r[0])
                     site_id = greatest_id
             #insert site's db name in site
-            conn.execute(sqlalchemy.text("UPDATE site SET db_name = '{}''{}' where site.site_id = site_id;".format(site_name, site_id)))
+            conn.execute(sqlalchemy.text("UPDATE site SET db_name = '{}''{}' where site.site_id = {};".format(site_name, site_id, site_id)))
             #add user to site_user_role as the site owner
             role_id = 0
             conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, '{}', {});".format(int(site_id), uid, role_id)))
