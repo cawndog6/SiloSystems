@@ -24,16 +24,16 @@ def addUserToSite(request):
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
    if request_args and 'role_id' in request_args:
       role_id = request_args['role_id']
-   else
+   else:
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
    if request_args and 'site_name' in request_args:
       site_name = request_args['site_id']
-   else
+   else:
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
    if request_args and 'requestor_uid' in request_args:
       requestor_uid = request_args['requestor_uid']
    else:
-      return ('', 400, {Access-Control-Allow_Origin':'*'})
+      return ('', 400, {'Access-Control-Allow_Origin':'*'})
 
       
    #connect to the database
@@ -58,7 +58,7 @@ def addUserToSite(request):
    with pool.connect() as conn:
       #check requestor_uid is authenticated as site owner to add new user
       result = conn.execute(sqlalchemy.text("SELECT site_id FROM site INNER JOIN site_user_role ON site.site_id = site_user_role.site_id WHERE site_user_role.uid = {} AND site_user_role.role_id = 0 AND  site.site_name = '{}';".format(requestor_uid, site_name)))
-      if numRows = len(results._saved_cursor._result.rows) == 0:
+      if result == 0:
          return ('Site does not exist or requestor is not an authorized owner of the site', 403, {'Access-Control-Allow_Origin':'*'}) 
       else:
          r = result.fetchone()
@@ -68,5 +68,5 @@ def addUserToSite(request):
 
 
 
-   return ('success', 200, {Access-Control-Allow-Origin':'*'})
+   return ('success', 200, {'Access-Control-Allow-Origin':'*'})
 

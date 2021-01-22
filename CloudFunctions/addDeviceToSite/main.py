@@ -2,7 +2,7 @@
 #Date: 1/21/2021
 #Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and run sql queries to add the the device to the site's database
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewSite?site_name=newSiteName&uid=abcdabcd
-#input: site_id, site_name, device_name
+#input: site_id, device_name, uid
 #output: returns status code 500 if server cannot create new site or 201 on success
 import pymysql
 import sqlalchemy
@@ -46,13 +46,14 @@ def addDeviceToSite(request):
     #execute sql statements
     #get site's db name & make sure the user is listed as an owner
     result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {} AND site_user_role.role_id = 0;".format(uid, site_id)))
-    if int(result.rowcount) = 0:
+    if int(result.rowcount) == 0:
         return('site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*'})
     r = result.fetchone()
+    db_name = str(r[0])
     #connect to site's database
     db_user = "root"
     db_pass = "FbtNb8rkjArEwApg"
-    db_name = "{}{}".format(site_name, site_id)
+    db_name = "{}{}".format(db_name)
     db_socket_dir = "/cloudsql"
     cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
@@ -73,7 +74,7 @@ def addDeviceToSite(request):
         )
     )
     connSiteDB = pool.connect()
-    connSiteDB.execute(sqlalchemy.text("CREATE TABLE IF NOT EXISTS devices('device_id' INT NOT NULL AUTO INCREMENT, 'device_name' VARCHAR(25) NOT NULL, PRIMARY KEY('device_id'));")
+    connSiteDB.execute(sqlalchemy.text("CREATE TABLE IF NOT EXISTS `devices`(`device_id` INT NOT NULL AUTO_INCREMENT, `device_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`device_id`));"))
     connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name) VALUES ('{}');".format(device_name)))
     return ('', 201, {'Access-Control-Allow-Origin':'*'})
     

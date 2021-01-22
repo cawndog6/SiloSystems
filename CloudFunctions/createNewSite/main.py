@@ -46,7 +46,7 @@ def createNewSite(request):
         #Add new site in database
         #Check if site already exists for the uid (owner)
         result = conn.execute(sqlalchemy.text("SELECT * FROM site INNER JOIN site_user_role on site.site_id = site_user_role.site_id WHERE site.site_name = '{}' AND site_user_role.uid = '{}';".format(site_name, uid)))
-        if int(result.rowcount) != 0:
+        if int(result.rowcount):
             return('Site already exists for this user.', 500, {'Access-Control-Allow-Origin':'*'})
         else:
             #create new entry for site in site table 
