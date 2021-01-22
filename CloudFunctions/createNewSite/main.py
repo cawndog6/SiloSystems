@@ -47,7 +47,7 @@ def createNewSite(request):
         #Check if site already exists for the uid (owner)
         result = conn.execute(sqlalchemy.text("SELECT * FROM site INNER JOIN site_user_role on site.site_id = site_user_role.site_id WHERE site.site_name = '{}' AND site_user_role.uid = '{}';".format(site_name, uid)))
         if int(result.rowcount):
-            return('Site already exists for this user.', 500, {'Access-Control-Allow-Origin':'*'})
+            return('Error:Site already exists for this user.', 500, {'Access-Control-Allow-Origin':'*'})
         else:
             #create new entry for site in site table 
             conn.execute(sqlalchemy.text("INSERT INTO site(site_name) VALUES ('{}');".format(site_name)))
@@ -65,5 +65,5 @@ def createNewSite(request):
             conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, '{}', {});".format(int(site_id), uid, role_id)))
             
         conn.execute("CREATE DATABASE {}{};".format(site_name, site_id))
-        return ('', 201, {'Access-Control-Allow-Origin':'*'})
+        return ('', 200, {'Access-Control-Allow-Origin':'*'})
         

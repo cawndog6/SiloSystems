@@ -3,7 +3,7 @@
 #Purpose: Take in arguments from an HTTP request for uid and run sql query to return sites that the user is a member of and allowed to access
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites?uid=hdsfjgkhlsdkhfg
 #input: site_name and uid
-#output: Returned string will look something like {"result":[{"role_id":0,"site_id":2}]}
+#output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
 import pymysql
 import sqlalchemy
 from flask import jsonify
@@ -47,10 +47,10 @@ def getAvailableSites(request):
    #execute sql statements
    with pool.connect() as conn:
       #check requestor_uid is authenticated as site owner to add new user
-      results = conn.execute(sqlalchemy.text("SELECT site_id, role_id FROM site_user_role WHERE site_user_role.uid = '{}';".format(uid)))
+      results = conn.execute(sqlalchemy.text("SELECT site_id, site_name, role_id  FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id WHERE site_user_role.uid = '{}';".format(uid)))
       numRows = int(results.rowcount)
       if numRows < 1:
-         return ('', 404, {'Access-Control-Allow_Origin':'*'})
+         return ('No sites are available for this user', 200, {'Access-Control-Allow_Origin':'*'})
       else:
          JSONresults = jsonify({'result': [dict(row) for row in results]})
          return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})

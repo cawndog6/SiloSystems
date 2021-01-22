@@ -20,15 +20,15 @@ def addUserToSite(request):
    request_args = request.args
 
    if request_args and 'new_user_email' in request_args:
-      user_email = request_args['new_user_email']
+      new_user_email = request_args['new_user_email']
    else: 
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
    if request_args and 'role_id' in request_args:
-      role_id = request_args['role_id']
+      new_user_role_id = request_args['role_id']
    else:
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
    if request_args and 'site_name' in request_args:
-      site_name = request_args['site_id']
+      site_id = request_args['site_id']
    else:
       return ('', 400, {'Access-Control-Allow-Origin':'*'})
    if request_args and 'requestor_uid' in request_args:
@@ -36,6 +36,8 @@ def addUserToSite(request):
    else:
       return ('', 400, {'Access-Control-Allow_Origin':'*'})
 
+   if new_user_role_id == 0:
+      return ('Error: You can only have 1 owner per site', 500, {'Access-Control-Allow_Origin':'*'})
       
    #connect to the database
    pool = sqlalchemy.create_engine(
@@ -58,16 +60,26 @@ def addUserToSite(request):
    #execute sql statements
    with pool.connect() as conn:
       #check requestor_uid is authenticated as site owner to add new user
-      result = conn.execute(sqlalchemy.text("SELECT site_id FROM site INNER JOIN site_user_role ON site.site_id = site_user_role.site_id WHERE site_user_role.uid = {} AND site_user_role.role_id = 0 AND  site.site_name = '{}';".format(requestor_uid, site_name)))
-      if result == 0:
-         return ('Site does not exist or requestor is not an authorized owner of the site', 403, {'Access-Control-Allow_Origin':'*'}) 
+      result = conn.execute(sqlalchemy.text("SELECT role_id from site_user_role where site_id = {} AND uid ='{}';".format(site_id, requestor_uid)))
+      if int(result.rowcount) == 0 :
+         return ("Error: Site does not exist for the requested user")
+      r = result.fetchone()
+      
+      if int(r[0]) != 0:
+         return ("Error: Requesting user is not the owner of this site")
       else:
+         #get uid of user to be added
+         result = conn.execute(sqlalchemy.text("SELECT uid from user where email = '{}';".format(new_user_email)))
          r = result.fetchone()
+         new_user_uid = str(r[0])
+         #add new user to site
+         conn.execute(sqlalchemy.text("INSERT INTO site_user_role values({}, '{}', {});".format(site_id, new_user_uid, new_user_role_id)))
+         return ('', 200, {'Access-Control-Allow-Origin':'*'})
 
 
 
 
 
 
-   return ('success', 200, {'Access-Control-Allow-Origin':'*'})
+   
 
