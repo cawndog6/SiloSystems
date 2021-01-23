@@ -4,11 +4,10 @@
 # This will revoke user privleges to view information about the site
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite&requestor_uid=abcdabcd
 #input: site_name and uid
-import pymysql
 import sqlalchemy
 
 
-def addUserToSite(request):
+def removeUserFromSite(request):
 
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
