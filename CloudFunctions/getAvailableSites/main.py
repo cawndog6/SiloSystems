@@ -52,7 +52,7 @@ def getAvailableSites(request):
       if numRows < 1:
          return ('No sites are available for this user', 200, {'Access-Control-Allow_Origin':'*'})
       else:
-         JSONresults = jsonify(dict(row) for row in results)
+         JSONresults = jsonify({'result': [dict(row) for row in results]})
          return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
 
 
