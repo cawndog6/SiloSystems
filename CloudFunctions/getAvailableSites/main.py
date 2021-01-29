@@ -6,7 +6,7 @@
 #output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
 import pymysql
 import sqlalchemy
-import json
+from flask import jsonify
 
 def getAvailableSites(request):
 
@@ -52,7 +52,7 @@ def getAvailableSites(request):
       if numRows < 1:
          return ('No sites are available for this user', 500, {'Access-Control-Allow_Origin':'*'})
       else:
-         JSONresults = json.dumps({'result': [dict(row) for row in results]})
+         JSONresults = jsonify({'result': [dict(row) for row in results]})
          return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
 
 
