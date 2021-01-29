@@ -20,7 +20,7 @@
 import sqlalchemy
 import json
 
-def getDeviceSiteInformation(request):
+def getSiteDeviceInformation(request):
    #get arguments to http request
    request_args = request.args
    if request_args and 'site_id' in request_args:
