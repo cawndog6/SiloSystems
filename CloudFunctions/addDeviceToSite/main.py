@@ -4,10 +4,8 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addDeviceToSite?<arguments>
 #input: site_id, device_name, uid
 #output: returns status code 500 if server cannot create new site or 201 on success
-import pymysql
 import sqlalchemy
 
-from flask import escape
 
 def addDeviceToSite(request):
    #get arguments to http request

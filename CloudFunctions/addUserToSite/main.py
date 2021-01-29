@@ -4,7 +4,6 @@
 # This will allow the user to view data within the site, but they will not be allowed to manage the site. Those privleges are reserved for site owners.
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite&requestor_uid=abcdabcd
 #input: site_name and uid
-import pymysql
 import sqlalchemy
 
 

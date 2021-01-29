@@ -4,10 +4,8 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewSite?site_name=newSiteName&uid=abcdabcd
 #input: site_name and uid
 #output: returns status code 500 if server cannot create new site or 201 on success
-import pymysql
 import sqlalchemy
 
-from flask import escape
 
 def createNewSite(request):
 
