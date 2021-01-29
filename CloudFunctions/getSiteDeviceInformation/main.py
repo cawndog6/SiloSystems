@@ -63,6 +63,7 @@ def getSiteDeviceInformation(request):
       return('Error: Site does not exist or user does not have permission to view', 500, {'Access-Control-Allow-Origin':'*'})
    r = result.fetchone()
    db_name = str(r[0])
+   print("db_name: '{}'".format(db_name))
    #connect to site's database
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
@@ -86,7 +87,9 @@ def getSiteDeviceInformation(request):
          }
       )
    )
+   print("about to connect")
    connSiteDB = pool.connect()
+   print("connected")
    deviceResults = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices;"))
    #assemble json string
    devices = {'devices': []}
