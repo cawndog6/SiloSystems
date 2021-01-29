@@ -4,6 +4,7 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites?uid=hdsfjgkhlsdkhfg
 #input: site_name and uid
 #output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
+import pymysql
 import sqlalchemy
 import json
 def getAvailableSites(request):
