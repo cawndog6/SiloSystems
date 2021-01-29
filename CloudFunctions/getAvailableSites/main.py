@@ -50,7 +50,7 @@ def getAvailableSites(request):
       results = conn.execute(sqlalchemy.text("SELECT site.site_id, site.site_name, site_user_role.role_id  FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id WHERE site_user_role.uid = '{}';".format(uid)))
       numRows = int(results.rowcount)
       if numRows < 1:
-         return ('No sites are available for this user', 200, {'Access-Control-Allow_Origin':'*'})
+         return ('No sites are available for this user', 500, {'Access-Control-Allow_Origin':'*'})
       else:
          JSONresults = jsonify({'result': [dict(row) for row in results]})
          return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})

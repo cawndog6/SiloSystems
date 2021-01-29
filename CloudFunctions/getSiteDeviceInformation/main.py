@@ -1,13 +1,24 @@
 #Author(s): Connor Williams
 #Date: 1/27/2021
-#Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and run sql queries to add the the device to the site's database
+#Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and return the available devices with their parameters in json format
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?<arguments>
-#input: site_id, device_name, uid
-#output: returns status code 500 if server cannot create new site or 201 on success
-import pymysql
+#input: site_id, uid
+#output: returns status code 500 if the site cant be found or the user does not have authorization for the site. Returns 200 on success and the json data, which will look like:
+# {
+#  "devices": [
+#   {
+#     "device_id": 1, 
+#     "device_name": "biolabPi", 
+#     "parameters": [
+#        {
+#        "parameter_name": "temperature",
+#        "parameter_id": 1
+#         }
+#      ]
+#   }]
+# }
 import sqlalchemy
-
-from flask import escape
+import json
 
 def getDeviceSiteInformation(request):
    #get arguments to http request
@@ -48,7 +59,7 @@ def getDeviceSiteInformation(request):
    #get site's db name & make sure the user is listed as an owner
    result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {};".format(uid, site_id)))
    if int(result.rowcount) == 0:
-      return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*'})
+      return('Error: Site does not exist or user does not have permission to view', 500, {'Access-Control-Allow-Origin':'*'})
    r = result.fetchone()
    db_name = str(r[0])
    #connect to site's database
@@ -75,8 +86,18 @@ def getDeviceSiteInformation(request):
       )
    )
    connSiteDB = pool.connect()
-   result = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices;"))
-   for r in result: pls
+   deviceResults = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices;"))
+   #assemble json string
+   devices = {'devices': []}
+   for d in deviceResults:
+      device = dict(d)
+      device_id = device['device_id']
+      #get available parameters for device
+      paramResults = connSiteDB.execute(sqlalchemy.text("""SELECT parameters.parameter_name, parameters.parameter_id  FROM parameters INNER JOIN device_parameter 
+      ON device_parameter.parameter_id = parameters.parameter_id WHERE device_parameter.device_id = {};""".format(device_id)))
       
-   return ('', 200, {'Access-Control-Allow-Origin':'*'})
+      device['parameters'] = [dict(p) for p in paramResults]
+      devices['devices'].append(device)
+   jsonData = json.dumps(devices)
+   return (jsonData, 200, {'Access-Control-Allow-Origin':'*'})
     
