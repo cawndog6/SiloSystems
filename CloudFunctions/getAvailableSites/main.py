@@ -5,7 +5,8 @@
 #input: site_name and uid
 #output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
 import pymysql
-import sqlalchemy import pymysql
+import sqlalchemy
+import pymysql
 import json
 def getAvailableSites(request):
 

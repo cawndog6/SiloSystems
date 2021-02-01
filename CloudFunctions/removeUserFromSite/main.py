@@ -5,7 +5,7 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite&requestor_uid=abcdabcd
 #input: site_name and uid
 import pymysql
-import sqlalchemy import pymysql
+import sqlalchemy
 
 
 def removeUserFromSite(request):

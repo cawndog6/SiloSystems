@@ -8,7 +8,7 @@ import sqlalchemy
 import pymysql
 
 
-def addDeviceToSite(request):
+def addParameterToDevice(request):
    #get arguments to http request
    request_args = request.args
    if request_args and 'site_id' in request_args:
