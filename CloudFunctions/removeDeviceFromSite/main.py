@@ -5,7 +5,7 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/removeDeviceFromSite?<arguments>
 #input: site_id, device_name, uid
 #output: returns status code 500 if server cannot create new site or 200 on success
-import sqlalchemy
+import sqlalchemy import pymysql
 
 
 def removeDeviceFromSite(request):

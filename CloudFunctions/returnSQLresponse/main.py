@@ -4,7 +4,7 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/returnSQLresponse?sensor=Temperatures&deviceID=12810
 #input: sensor & deviceID
 import pymysql
-import sqlalchemy
+import sqlalchemy import pymysql
 
 from flask import escape
 

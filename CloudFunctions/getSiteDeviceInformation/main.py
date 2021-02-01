@@ -18,7 +18,7 @@
 #   }]
 # }
 import pymysql
-import sqlalchemy
+import sqlalchemy import pymysql
 import json
 
 def getSiteDeviceInformation(request):

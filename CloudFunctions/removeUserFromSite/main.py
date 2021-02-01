@@ -4,7 +4,8 @@
 # This will revoke user privleges to view information about the site
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite&requestor_uid=abcdabcd
 #input: site_name and uid
-import sqlalchemy
+import pymysql
+import sqlalchemy import pymysql
 
 
 def removeUserFromSite(request):
@@ -66,5 +67,5 @@ def removeUserFromSite(request):
          r = result.fetchone()
          delete_user_uid = str(r[0])
          #add new user to site
-         conn.execute(sqlalchemy.text("DELETE FROM site_user_role WHERE site_id = {} AND delete_user_uid;".format(site_id, delete_user_uid)))
+         conn.execute(sqlalchemy.text("DELETE FROM site_user_role WHERE site_id = {} AND delete_user_uid = {};".format(site_id, delete_user_uid)))
          return ('', 200, {'Access-Control-Allow-Origin':'*'})
