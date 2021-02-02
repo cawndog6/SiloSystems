@@ -93,7 +93,7 @@ def addParameterToDevice(request):
    results = connSiteDB.execute(sqlalchemy.text("SELECT * from parameters where parameter_name = '{}';".format(parameter_name)))
    if int(results.rowcount) != 0:
       return('Error: Parameter already exists for this site', 500, {'Access-Control-Allow-Origin':'*'})
-   connSiteDB.execute(sqlalchemy.text("CREATE TABLE IF NOT EXISTS {}(`date_time` DATETIME NOT NULL, `device_id` int NOT NULL, `{}` {} PRIMARY KEY(`date_time`));".format(parameter_name, data_val, data_type)))
+   connSiteDB.execute(sqlalchemy.text("CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, {} {} PRIMARY KEY(date_time));".format(parameter_name, data_val, data_type)))
    connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
    results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
    r = results.fetchone()
