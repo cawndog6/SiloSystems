@@ -1,8 +1,8 @@
 #Author(s): Connor Williams
 #Date: 1/21/2021
 #Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and run sql queries to add the the device to the site's database
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addDeviceToSite?<arguments>
-#input: site_id, device_name, uid
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addParameterToDevice<arguments>
+#input: site_id, device_id, uid, parameter_name, data_val, data_type
 #output: returns status code 500 if server cannot create new site or 201 on success
 import sqlalchemy
 import pymysql
@@ -69,7 +69,7 @@ def addParameterToDevice(request):
    #connect to site's database
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
-   db_name = "{}{}".format(db_name)
+   db_name = "{}".format(db_name)
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
