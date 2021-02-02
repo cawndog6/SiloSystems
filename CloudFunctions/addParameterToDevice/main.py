@@ -60,7 +60,9 @@ def addParameterToDevice(request):
    connSiteUserManagement = pool.connect()
    #execute sql statements
    #get site's db name & make sure the user is listed as an owner
-   result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {} AND site_user_role.role_id = 0;".format(uid, site_id)))
+   result = connSiteUserManagement.execute(sqlalchemy.text("""SELECT db_name FROM site_user_role INNER JOIN site ON 
+      site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {} 
+      AND site_user_role.role_id = 0;""".format(uid, site_id)))
    if int(result.rowcount) == 0:
       print("Error: Site does not exist or user does not have ownership permissions")
       return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*'})
@@ -90,13 +92,17 @@ def addParameterToDevice(request):
       )
    )
    connSiteDB = pool.connect()
-   results = connSiteDB.execute(sqlalchemy.text("SELECT * from parameters where parameter_name = '{}';".format(parameter_name)))
+   #check if parameter already exists for the device its being added to
+   results = connSiteDB.execute(sqlalchemy.text("""SELECT * from parameters INNER JOIN device_parameter ON 
+      parameters.parameter_id = device_parameter.parameter_id where parameters.parameter_name = '{}' AND 
+      device_parameter.device_id = {};""".format(parameter_name, device_id)))
    if int(results.rowcount) != 0:
-      return('Error: Parameter already exists for this site', 500, {'Access-Control-Allow-Origin':'*'})
-   print("param name: " + parameter_name + " data_val: " + data_val + " data_type: " + data_type)
-   print("CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, {} {} PRIMARY KEY(date_time));".format(parameter_name, data_val, data_type))
-   connSiteDB.execute(sqlalchemy.text("CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, {} {}, PRIMARY KEY(date_time));".format(parameter_name, data_val, data_type)))
+      return('Error: Parameter already exists for this device', 500, {'Access-Control-Allow-Origin':'*'})
+   #create table for parameter if it doesnt already exist
+   connSiteDB.execute(sqlalchemy.text("""CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, 
+      {} {}, PRIMARY KEY(date_time));""".format(parameter_name, data_val, data_type)))
    connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
+   #add parameter to the device
    results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
    r = results.fetchone()
    parameter_id = r[0]
