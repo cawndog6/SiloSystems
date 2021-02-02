@@ -93,8 +93,8 @@ def createNewSite(request):
    )
    print("about to connect")
    connSiteDB = pool.connect()
-   connSiteDB.execute(sqlalchemy.text("CREATE TABLE `devices`(`device_id` INT NOT NULL AUTO_INCREMENT, `device_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`device_id`));"))
-   connSiteDB.execute(sqlalchemy.text("CREATE TABLE `parameters`(`parameter_id` INT NOT NULL AUTO_INCREMENT, `parameter_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`device_id, parameter_name`));"))
+   connSiteDB.execute(sqlalchemy.text("CREATE TABLE `devices`(`device_id` INT NOT NULL AUTO_INCREMENT, `device_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`device_id, device_name`));"))
+   connSiteDB.execute(sqlalchemy.text("CREATE TABLE `parameters`(`parameter_id` INT NOT NULL AUTO_INCREMENT, `parameter_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`parameter_id, parameter_name`));"))
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `device_parameter`(`device_id` INT NOT NULL, `device_name` VARCHAR(25) NOT NULL;"))
    return ('', 200, {'Access-Control-Allow-Origin':'*'})
         
