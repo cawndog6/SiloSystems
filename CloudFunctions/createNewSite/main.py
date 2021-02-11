@@ -21,11 +21,11 @@ def createNewSite(request):
    if request_args and 'site_name' in request_args:
       site_name = request_args['site_name']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
+      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
    if request_args and 'uid' in request_args:
       uid = request_args['uid']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
+      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
 
    #connect to the database
    pool = sqlalchemy.create_engine(
@@ -49,7 +49,7 @@ def createNewSite(request):
       #Check if site already exists for the uid (owner)
       result = conn.execute(sqlalchemy.text("SELECT * FROM site INNER JOIN site_user_role on site.site_id = site_user_role.site_id WHERE site.site_name = '{}' AND site_user_role.uid = '{}';".format(site_name, uid)))
       if int(result.rowcount):
-         return('Error:Site already exists for this user.', 500, {'Access-Control-Allow-Origin':'*'})
+         return('Error:Site already exists for this user.', 500, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
       else:
          #create new entry for site in site table 
          conn.execute(sqlalchemy.text("INSERT INTO site(site_name) VALUES ('{}');".format(site_name)))
@@ -96,5 +96,5 @@ def createNewSite(request):
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `devices`(`device_id` INT NOT NULL AUTO_INCREMENT, `device_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`device_id`, `device_name`));"))
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `parameters`(`parameter_id` INT NOT NULL AUTO_INCREMENT, `parameter_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`parameter_id`, `parameter_name`));"))
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `device_parameter`(`device_id` INT NOT NULL, `device_name` VARCHAR(25) NOT NULL);"))
-   return ('', 200, {'Access-Control-Allow-Origin':'*'})
+   return ('', 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
         

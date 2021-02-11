@@ -22,7 +22,7 @@ def getAvailableSites(request):
    if request_args and 'uid' in request_args:
       uid = request_args['uid']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
+      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
 
 
       
@@ -53,6 +53,6 @@ def getAvailableSites(request):
          return ('No sites are available for this user', 500, {'Access-Control-Allow_Origin':'*'})
       else:
          JSONresults = json.dumps({'result': [dict(row) for row in results]})
-         return (JSONresults, 200, {'Access-Control-Allow-Origin':'*'})
+         return (JSONresults, 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
 
 

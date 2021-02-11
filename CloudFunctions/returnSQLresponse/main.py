@@ -8,6 +8,17 @@ import sqlalchemy
 from flask import escape
 
 def returnSQLresponse(request):
+    Config = {
+    apiKey: "AIzaSyDjyljriWPsr2qCz_CDi1X0apNzpsVdxMc",
+    authDomain: "silo-systems-292622.firebaseapp.com",
+    databaseURL: "https://silo-systems-292622.firebaseio.com",
+    projectId: "silo-systems-292622",
+    storageBucket: "silo-systems-292622.appspot.com",
+    messagingSenderId: "664599356034",
+    appId: "1:664599356034:web:962f6119ebaaece13f8a9b"
+    } 
+    decoded_token = auth.verify_id_token(id_token)
+    uid = decoded_token['uid'] 
 
     db_user = "root"
     db_pass = "FbtNb8rkjArEwApg"

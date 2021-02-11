@@ -47,7 +47,7 @@ def removeDeviceFromSite(request):
    #get site's db name & make sure the user is listed as an owner
    result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site INNER JOIN site_user_role ON site.site_id = site_user_role.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {} AND site_user_role.role_id = 0;".format(uid, site_id)))
    if int(result.rowcount) == 0:
-      return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*'})
+      return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
    r = result.fetchone()
    db_name = str(r[0])
    #connect to site's database
@@ -80,5 +80,5 @@ def removeDeviceFromSite(request):
       connSiteDB.execute(sqlalchemy.text("delete from {} where device_id = {};".format(str(r[0]), device_id)))
    connSiteDB.execute(sqlalchemy.text("delete from devices where device_id = {};".format(device_id) ))
    connSiteDB.execute(sqlalchemy.text("delete from device_parameter where device_id = {};".format(device_id)))
-   return ('', 200, {'Access-Control-Allow-Origin':'*'})
+   return ('', 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
     

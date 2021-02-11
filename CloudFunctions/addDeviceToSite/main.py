@@ -14,15 +14,15 @@ def addDeviceToSite(request):
    if request_args and 'site_id' in request_args:
        site_id = request_args['site_id']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
+      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
    if request_args and 'device_name' in request_args:
        device_name = request_args['device_name']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
+      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
    if request_args and 'uid' in request_args:
        uid = request_args['uid']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*'})
+      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
 
 
    #connect to the site-user_management database
@@ -51,7 +51,7 @@ def addDeviceToSite(request):
    #get site's db name & make sure the user is listed as an owner
    result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {} AND site_user_role.role_id = 0;".format(uid, site_id)))
    if int(result.rowcount) == 0:
-      return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*'})
+      return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
    r = result.fetchone()
    db_name = str(r[0])
    #connect to site's database
@@ -79,5 +79,5 @@ def addDeviceToSite(request):
    )
    connSiteDB = pool.connect()
    connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name) VALUES ('{}');".format(device_name)))
-   return ('', 200, {'Access-Control-Allow-Origin':'*'})
+   return ('', 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
     
