@@ -6,8 +6,9 @@
 import pymysql
 import sqlalchemy
 from flask import escape
-import firebase_admin
+import firebase_admin import auth
 def returnSQLresponse(request):
+    default_app = firebase_admin.initialize_app()
     headers = request.headers
     if headers and 'Authorization' in headers:
         id_token = headers['Authorization']
