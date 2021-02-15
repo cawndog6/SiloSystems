@@ -1,6 +1,10 @@
+//This file contains functions for user account creation, login, and other account functions
+
 //################# INITIALIZATION ########################
 
 let currentToken = undefined;
+let currentSite = undefined;
+const loginMessageLevel = {MESSAGE: 0, ERROR: 1, ERRORNOTRYAGAIN: 2}
 
 //initialize Firebase authentication
 const firebaseConfig = {
@@ -19,17 +23,26 @@ const auth = firebase.auth();
 
 //################# COMMON FUNCTIONS ######################
 
-function SetUserCookies(user, token, remember) {
+function SetUserCookies(user, token, site, remember) {
     let today = new Date();
     let todayPlus30 = new Date();
     todayPlus30.setDate(today.getDate()+30);
-
+    let expireString = "";
     if(remember) {
-        document.cookie = `token=${token}; expires=${todayPlus30}`;
-        document.cookie = `user=${user}; expires=${todayPlus30}`;
-    } else {
-        document.cookie = `token=${user}`;
-        document.cookie = `user=${user}`;
+        expireString = `; expires=${todayPlus30}`;
+    }
+
+    if(token !== undefined) {
+        document.cookie = `token=${token}${expireString}`;
+        currentToken = token;
+    }
+
+    if(user !== undefined) {
+        document.cookie = `user=${user}${expireString}`;
+    }
+    
+    if(site !== undefined) {
+        document.cookie = `site=${site}${expireString}`;
     }
 }
 
@@ -43,7 +56,7 @@ function UpdateUserDisplay() {
         loginLink.classList.remove("hidden");
         logoutLink.classList.add("hidden");
     } else {
-        token = document.cookie.split("token=")[1].split(";")[0];
+        currentToken = document.cookie.split("token=")[1].split(";")[0];
         let user = document.cookie.split("user=")[1].split(";")[0];
         userDisplay.innerHTML = `Currently logged in as <strong>${user}</strong>`;
         loginLink.classList.add("hidden");
@@ -51,15 +64,42 @@ function UpdateUserDisplay() {
     }
 }
 
-function ShowLoginError(err) {
-    document.getElementById("login-box").classList.add("showLoginError");
-    document.getElementById("login-error-box-text").innerText = err;
-    document.getElementById("login-error-box").classList.remove("hidden");
+function ShowLoginMessage(err, level) {
+    let loginMessageBox = document.getElementById("login-message-box");
+
+    document.getElementById("login-box").classList.add("showLoginMessage");
+
+    let messageNode = document.createTextNode(err);
+    let brNode = document.createElement("br");
+    let errorNode = document.createTextNode("Please try again.");
+
+    switch(level) {
+        case loginMessageLevel.MESSAGE:
+            loginMessageBox.appendChild(messageNode);
+            break;
+        case loginMessageLevel.ERROR:
+            loginMessageBox.appendChild(messageNode);
+            loginMessageBox.appendChild(brNode);
+            loginMessageBox.appendChild(errorNode);
+            loginMessageBox.style.color = "red";
+            break;
+        case loginMessageLevel.ERRORNOTRYAGAIN:
+            loginMessageBox.appendChild(messageNode);
+            loginMessageBox.style.color = "red";
+            break;
+    }
+
+    loginMessageBox.classList.remove("hidden");
 }
 
-function UnshowLoginError() {
-    document.getElementById("login-box").classList.remove("showLoginError");
-    document.getElementById("login-error-box").classList.add("hidden");
+function UnshowLoginMessage() {
+    document.getElementById("login-box").classList.remove("showLoginMessage");
+
+    let loginMessageBox = document.getElementById("login-message-box");
+
+    Array.from(loginMessageBox.childNodes).forEach((node)=>node.remove());
+
+    loginMessageBox.classList.add("hidden");
 }
 
 //################# LOGIN FUNCTIONS #######################
@@ -85,9 +125,11 @@ function Login() {
     let password = form.elements.password.value;
     let remember = form.elements.remember.checked;
 
+    UnshowLoginMessage();
+
     auth.signInWithEmailAndPassword(user, password).catch(()=> {
         Log(level.WARNING, `Invalid login attempt for user ${user}`);
-        ShowLoginError("Either your username or password was incorrect.");
+        ShowLoginMessage("Either your username or password was incorrect.", loginMessageLevel.ERROR);
     }).then((token)=> {
         if(token === undefined) {
             return;
@@ -95,7 +137,7 @@ function Login() {
         console.log(token)
         Log(level.DEBUG, `Successful ${(remember) ? "persistent":"session"} login for user ${user}`);
 
-        SetUserCookies(user, token, remember);
+        SetUserCookies(user, token.user.refreshToken, undefined, remember);
 
         UpdateUserDisplay();
         UnshowLogin();
@@ -125,7 +167,7 @@ function ShowSignup() {
     loginForm.classList.add("hidden");
     signupForm.classList.remove("hidden");
 
-    UnshowLoginError();
+    UnshowLoginMessage();
 
     if(user == "") {
         signupForm.elements.user.focus();
@@ -152,7 +194,7 @@ function UnshowSignup() {
     loginForm.classList.remove("hidden");
     signupForm.classList.add("hidden");
 
-    UnshowLoginError();
+    UnshowLoginMessage();
 
     if(user == "" || (user != "" && password != "")) {
         loginForm.elements.user.focus();
@@ -169,19 +211,23 @@ function Signup() {
     let password = form.elements.password.value;
     let passwordConfirmation = form.elements.passwordConfirmation.value;
 
+    UnshowLoginMessage();
+
     if(password != passwordConfirmation) {
-        ShowLoginError("The passwords you entered didn't match.");
+        ShowLoginMessage("The passwords you entered didn't match.", loginMessageLevel.ERROR);
         return;
     }
 
     auth.createUserWithEmailAndPassword(user, password).catch((err)=> {
         Log(level.WARNING, `Signup failed with a ${err.code} error`);
 
-        if(err.message.substring(len(err.message)-1) == ".") {
-            ShowLoginError(`Error: ${err.message}`);
+        err = JSON.parse(err.message);
+
+        if(err.error.message.substring(err.error.message.length-1) == ".") {
+            ShowLoginMessage(`Error: ${err.error.message}`, loginMessageLevel.ERROR);
         }
         else {
-            ShowLoginError(`Error: ${err.message}.`);
+            ShowLoginMessage(`Error: ${err.error.message}.`, loginMessageLevel.ERROR);
         }
         return undefined;
     }).then((token)=> {
@@ -191,9 +237,98 @@ function Signup() {
 
         Log(level.DEBUG, `Successful registration for user ${user}`);
         
-        SetUserCookies(user, token, false);
+        SetUserCookies(user, token, undefined, false);
 
         UpdateUserDisplay();
         UnshowLogin();
     });
+}
+
+//################# PASSWORD RESET FUNCTIONS ##############
+
+function RequestPasswordReset() {
+    let loginForm = document.getElementById("login-form");
+    let resetForm = document.getElementById("reset-form");
+    let user = loginForm.elements.user.value;
+
+    UnshowLoginMessage();
+
+    if(user.length < 1) {
+        ShowLoginMessage("Please enter your email address and try again.", loginMessageLevel.ERRORNOTRYAGAIN);
+        return;
+    }
+
+    auth.sendPasswordResetEmail(user).catch((err)=> {
+        Log(level.WARNING, `Reset request failed with a ${err.code} error`);
+
+        if(err.message.substring(err.message.length-1) == ".") {
+            ShowLoginMessage(`Error: ${err.message}`, loginMessageLevel.ERROR);
+        }
+        else {
+            ShowLoginMessage(`Error: ${err.message}.`, loginMessageLevel.ERROR);
+        }
+
+        return -1;
+    }).then((status)=> {
+        if(status == -1) {
+            return;
+        }
+
+        Log(level.DEBUG, `Successful reset request for user ${user}`);
+        
+        resetForm.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+    })
+}
+
+function ConfirmPasswordReset() {
+    let loginForm = document.getElementById("login-form");
+    let resetForm = document.getElementById("reset-form");
+
+    let code = resetForm.elements.code.value;
+    let password = resetForm.elements.password.value;
+    let passwordConfirmation = resetForm.elements.passwordConfirmation.value;
+
+    UnshowLoginMessage();
+
+    if(password != passwordConfirmation) {
+        ShowLoginMessage("The passwords you entered didn't match.", loginMessageLevel.ERROR);
+        return;
+    }
+
+    auth.confirmPasswordReset(code, password).catch((err)=> {
+        Log(level.WARNING, `Reset confirmation failed with a ${err.code} error`);
+
+        if(err.message.substring(err.message.length-1) == ".") {
+            ShowLoginMessage(`Error: ${err.error.message}`, loginMessageLevel.ERROR);
+        }
+        else {
+            ShowLoginMessage(`Error: ${err.error.message}.`, loginMessageLevel.ERROR);
+        }
+
+        return -1;
+    }).then(()=> {
+        if(status == -1) {
+            return;
+        }
+
+        Log(level.DEBUG, `Password successfully reset`);
+        
+        resetForm.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+
+        resetForm.elements.user.value = user;
+
+        ShowLoginMessage("Password successfully reset.<br>Please log in using your new password.", loginMessageLevel.MESSAGE);
+
+        setTimeout(()=>window.location.reload(), 3000);
+    })
+}
+
+function UnshowReset() {
+    let loginForm = document.getElementById("login-form");
+    let resetForm = document.getElementById("reset-form");
+
+    loginForm.classList.remove("hidden");
+    resetForm.classList.add("hidden");
 }

@@ -1,3 +1,5 @@
+//This file contains functions for HTTP requests, data processing and display, and other miscellaneous needs
+
 //################# INITIALIZATION ########################
 
 const level = {DEBUG: 0, WARNING: 1, ERROR: 2};
@@ -28,7 +30,15 @@ async function Get(url, isJson) {
         isJson = true;
     }
 
-    let response = await fetch(url);
+    let init;
+    if(true || currentToken === undefined || url.substring(0,apiRoot.length) != apiRoot) {    //don't send auth header to outside requests
+        init = {};
+    } else {
+        //disabled 2/14 pending Access-Control-Allow-Headers update on the server
+        init = {'headers': new Headers({'Authorization': `Bearer ${currentToken}`})};
+    }
+
+    let response = await fetch(url, init);
     
     if(response.ok) {
         Log(level.DEBUG, `Get request to ${url} succeeded with code ${response.status}`);
@@ -48,8 +58,13 @@ async function Post(url, body, isJson) {
         isJson = true;
     }
 
-    let init = {method: "POST", body: body} 
-
+    let init;
+    if(true || currentToken === undefined || url.substring(0,apiRoot.length-1) != apiRoot) {    //don't send auth header to outside requests
+        init = {"headers": new Headers({"Authorization": `Bearer ${currentToken}`}), "method": "POST", "body": body} 
+    } else {
+        //disabled 2/14 pending Access-Control-Allow-Headers update on the server
+        init = {"method": "POST", "body": body}
+    }
     let response = await fetch(url, init);
     
     if(response.ok) {
@@ -114,12 +129,54 @@ function DrawLineChart(dataTable, x_title, y_title, width, height, vAxis_fmt) {
 
 //################# DATA FUNCTIONS ########################
 
+function LoadSiteList() {
+    let siteList = document.getElementById("site-selector");
+
+    GetAvailableSites().then((response)=> {
+        if(response == -1) {
+            return;
+        }
+
+        Array.from(siteList.children).forEach((listItem)=> {
+            listItem.remove();
+        });
+
+        Array.from(response.result).forEach((site)=> {
+            let listItem = document.createElement("option");
+            listItem.innerText = site.site_name;
+            listItem.id = `site_${site.site_id}`;
+
+            siteList.appendChild(listItem);
+        });
+
+        if(document.cookie.indexOf("site=") > -1) {
+            currentSite = document.cookie.split("site=")[1].split(";")[0];
+        }
+        else {
+            currentSite = siteList.children[0].id;
+            SetUserCookies(undefined, undefined, currentSite, true);
+        }
+        
+        siteList.selectedIndex = Array.from(siteList.children).map((child)=>child.id).indexOf(currentSite);
+
+        siteList.onchange = ChangeSite;
+
+        siteList.disabled = false;
+    });
+}
+
+function ChangeSite(evt) {
+    let newSite = evt.target.options[evt.target.selectedIndex].id;
+    currentSite = newSite;
+    SetUserCookies(undefined, undefined, newSite, true);
+}
+
 function DrawSensorTable(response) {
     let sensorTable = document.getElementById("sensor-table").tBodies[0];
 
     response = response[1];
 
-    response.sensors.forEach(function(sensor) {
+    response.sensors.forEach((sensor)=> {
         let row = sensorTable.insertRow();
 
         let deviceIdCell = row.insertCell();
@@ -155,7 +212,7 @@ function DrawSensorTable(response) {
 }
 
 function ViewSensor(event) {
-    if(token === undefined) {
+    if(currentToken === undefined) {
         alert("Sorry, you must be logged in to perform that action. Please log in and try again.");
         return;
     }
@@ -163,13 +220,13 @@ function ViewSensor(event) {
     let fullId = event.target.id;
     let id = fullId.substring(2);
 
-    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then(function(response) {
+    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then((response)=> {
         DrawLineChart(response.data.map(row => [new Date(row.date), row.value]), "Date", response.sensorName, "100%", "400px", (response.sensorName.indexOf("%") > -1 ? "percent" : "decimal"))
     });
 }
 
 function DownloadSensor(event) {
-    if(token === undefined) {
+    if(currentToken === undefined) {
         alert("Sorry, you must be logged in to perform that action. Please log in and try again.");
         return;
     }
@@ -179,7 +236,7 @@ function DownloadSensor(event) {
 
     let today = FormatDate(new Date());
 
-    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then(function(response) {
+    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then((response)=> {
         let download = `Date,${response.sensorName}\n`;
         download += response.data.map(row => `${FormatDate(new Date(row.date))},${row.value}`).join('\n');
 

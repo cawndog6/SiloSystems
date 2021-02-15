@@ -52,6 +52,11 @@ nav {
     font-size: initial;
     font-weight: initial;
 }
+#site-selector {
+    margin-left: 6ch;
+    margin-right: 6ch;
+    width: 20ch;
+}
 main {
     width: 80vw;
     margin: 2vh auto;
@@ -81,14 +86,14 @@ div#login-box {
     background-color: white;
     position: relative;
     height: 40vh;
-    min-height: 420px;
+    min-height: 440px;
     margin: auto;
     box-sizing: border-box;
     padding: 40px;
     top: 30vh;
     text-align: center;
 }
-div.showLoginError#login-box {
+div.showLoginMessage#login-box {
     min-height: 460px;
 }
 form.accountForm {
@@ -108,9 +113,6 @@ form.accountForm input[type="checkbox"] {
     vertical-align: middle;
     width: 4ch;
 }
-div#login-error-box {
-    color: red;
-}
 div#data-chart {
     width: 100%;
     min-height: 400px;
@@ -124,4 +126,7 @@ table, tr, th, td {
 }
 table {
     width: 100%;
+}
+.noborder {
+    border: 0;
 }
