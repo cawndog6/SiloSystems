@@ -18,14 +18,12 @@ def returnSQLresponse(request):
             'Access-Control-Allow-Headers': 'Authorization',
             'Access-Control-Max-Age': '3600'
         }
-        return ('', 204, headers)
+        return ('', 204, res_headers)
     # Set CORS headers for the main request
     res_headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Authorization',
     }
-
-    return ('Hello World!', 200, res_headers)
     req_headers = request.headers
     if req_headers and 'Authorization' in req_headers:
         token_ID = req_headers['Authorization']
