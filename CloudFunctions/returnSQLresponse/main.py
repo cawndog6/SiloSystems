@@ -8,6 +8,7 @@ import sqlalchemy
 from flask import escape
 import firebase_admin
 from firebase_admin import auth
+default_app = firebase_admin.initialize_app()
 def returnSQLresponse(request):
 
     res_headers = {
@@ -19,7 +20,6 @@ def returnSQLresponse(request):
         token_ID = req_headers['Authorization']
     else:
         return ("No Authorization Header", 400, res_headers);
-    default_app = firebase_admin.initialize_app()
     PREFIX = 'Bearer '
     token_ID = token_ID[len(PREFIX):]
     decoded_token = auth.verify_id_token(token_ID)
