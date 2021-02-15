@@ -8,6 +8,8 @@ import pymysql
 import sqlalchemy
 import pymysql
 import json
+import firebase_admin
+from firebase_admin import auth
 def getAvailableSites(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

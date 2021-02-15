@@ -17,13 +17,16 @@ def returnSQLresponse(request):
     }
     req_headers = request.headers
     if req_headers and 'Authorization' in req_headers:
-        token_ID = req_headers['Authorization']
+        id_token = req_headers['Authorization']
     else:
         return ("No Authorization Header", 400, res_headers);
     PREFIX = 'Bearer '
-    token_ID = token_ID[len(PREFIX):]
-    decoded_token = auth.verify_id_token(token_ID)
-    uid = decoded_token['uid'] 
+    id_token = id_token[len(PREFIX):]
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+        uid = decoded_token['uid'] 
+    except Exception as e:
+        return ("Error: {}".format(e), 500, res_headers)
 
     db_user = "root"
     db_pass = "FbtNb8rkjArEwApg"

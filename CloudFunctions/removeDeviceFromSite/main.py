@@ -7,7 +7,8 @@
 #output: returns status code 500 if server cannot create new site or 200 on success
 import sqlalchemy
 import pymysql
-
+import firebase_admin
+from firebase_admin import auth
 
 def removeDeviceFromSite(request):
    res_headers = {

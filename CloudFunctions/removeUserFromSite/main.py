@@ -6,7 +6,8 @@
 #input: site_name and uid
 import pymysql
 import sqlalchemy
-from firebase import Firebase
+import firebase_admin
+from firebase_admin import auth
 def removeUserFromSite(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

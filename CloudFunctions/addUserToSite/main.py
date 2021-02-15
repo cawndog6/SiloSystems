@@ -7,7 +7,8 @@
 
 import sqlalchemy
 import pymysql
-
+import firebase_admin
+from firebase_admin import auth
 
 def addUserToSite(request):
    res_headers = {
