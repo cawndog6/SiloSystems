@@ -6,7 +6,7 @@
 import pymysql
 import sqlalchemy
 from flask import escape
-import firebase
+import firebase_admin
 def returnSQLresponse(request):
     headers = request.headers
     if headers and 'Authorization' in headers:
