@@ -25,7 +25,7 @@ def returnSQLresponse(request):
     try:
         decoded_token = auth.verify_id_token(id_token)
         uid = decoded_token['uid']
-        print({}.format(uid))
+        print("{}".format(uid))
     except Exception as e:
         return ("Error: {}".format(e), 500, res_headers)
 
