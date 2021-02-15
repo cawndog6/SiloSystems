@@ -4,3 +4,4 @@ pymysql
 flask
 firebase
 python_jwt
+gcloud
