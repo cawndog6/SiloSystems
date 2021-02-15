@@ -16,6 +16,18 @@ def removeDeviceFromSite(request):
       'Access-Control-Allow-Headers': 'Authorization',
    }
    #get arguments to http request
+   if req_headers and 'Authorization' in req_headers:
+         id_token = req_headers['Authorization']
+   else:
+      return ("No Authorization Header", 400, res_headers);
+   PREFIX = 'Bearer '
+   id_token = id_token[len(PREFIX):]
+   try:
+      decoded_token = auth.verify_id_token(id_token)
+      uid = decoded_token['uid']
+   except Exception as e:
+      return ("Error: {}".format(e), 500, res_headers)
+      
    request_args = request.args
    if request_args and 'site_id' in request_args:
       site_id = request_args['site_id']

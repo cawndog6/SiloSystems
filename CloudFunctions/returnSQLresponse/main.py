@@ -22,11 +22,9 @@ def returnSQLresponse(request):
         return ("No Authorization Header", 400, res_headers);
     PREFIX = 'Bearer '
     id_token = id_token[len(PREFIX):]
-    print(id_token)
     try:
         decoded_token = auth.verify_id_token(id_token)
         uid = decoded_token['uid']
-        print(uid)
     except Exception as e:
         return ("Error: {}".format(e), 500, res_headers)
 

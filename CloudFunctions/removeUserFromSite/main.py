@@ -13,8 +13,18 @@ def removeUserFromSite(request):
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
    }
-   decoded_token = auth.verify_id_token(id_token)
-   uid = decoded_token['uid'] 
+   if req_headers and 'Authorization' in req_headers:
+         id_token = req_headers['Authorization']
+   else:
+      return ("No Authorization Header", 400, res_headers);
+   PREFIX = 'Bearer '
+   id_token = id_token[len(PREFIX):]
+   try:
+      decoded_token = auth.verify_id_token(id_token)
+      uid = decoded_token['uid']
+   except Exception as e:
+      return ("Error: {}".format(e), 500, res_headers)
+      
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
    db_name = "site-user-management"
