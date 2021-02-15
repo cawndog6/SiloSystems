@@ -14,6 +14,7 @@ def createNewSite(request):
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
    }
+   req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
    else:

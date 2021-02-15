@@ -14,6 +14,7 @@ def addDeviceToSite(request):
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
    }
+   req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
    else:
@@ -25,7 +26,7 @@ def addDeviceToSite(request):
       uid = decoded_token['uid']
    except Exception as e:
       return ("Error: {}".format(e), 500, res_headers)
-      
+
    #get arguments to http request
    request_args = request.args
    if request_args and 'site_id' in request_args:
@@ -34,10 +35,6 @@ def addDeviceToSite(request):
       return ('', 400, res_headers)
    if request_args and 'device_name' in request_args:
        device_name = request_args['device_name']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'uid' in request_args:
-       uid = request_args['uid']
    else: 
       return ('', 400, res_headers)
 

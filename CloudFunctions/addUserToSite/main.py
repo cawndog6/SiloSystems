@@ -20,6 +20,7 @@ def addUserToSite(request):
    db_name = "site-user-management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
+   req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
    else:
@@ -47,13 +48,9 @@ def addUserToSite(request):
       site_id = request_args['site_id']
    else:
       return ('', 400, res_headers)
-   if request_args and 'requestor_uid' in request_args:
-      requestor_uid = request_args['requestor_uid']
-   else:
-      return ('', 400, {'Access-Control-Allow_Origin':'*'})
 
    if new_user_role_id == 0:
-      return ('Error: You can only have 1 owner per site', 500, {'Access-Control-Allow_Origin':'*'})
+      return ('Error: You can only have 1 owner per site', 500, res_headers)
       
    #connect to the database
    pool = sqlalchemy.create_engine(

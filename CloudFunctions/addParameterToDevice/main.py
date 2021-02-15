@@ -14,6 +14,7 @@ def addParameterToDevice(request):
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
    }
+   req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
    else:
@@ -37,10 +38,6 @@ def addParameterToDevice(request):
       return ('', 400, res_headers)
    if request_args and 'parameter_name' in request_args:
       parameter_name = request_args['parameter_name']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'uid' in request_args:
-      uid = request_args['uid']
    else: 
       return ('', 400, res_headers)
    if request_args and 'data_val' in request_args:

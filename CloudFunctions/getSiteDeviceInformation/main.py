@@ -29,6 +29,7 @@ def getSiteDeviceInformation(request):
       'Access-Control-Allow-Headers': 'Authorization',
    }
    #get arguments to http request
+   req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
       id_token = req_headers['Authorization']
    else:
