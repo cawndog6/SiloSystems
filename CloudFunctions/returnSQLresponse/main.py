@@ -7,7 +7,7 @@ import pymysql
 import sqlalchemy
 from flask import escape
 
-import firebase
+import Firebase
 
 def returnSQLresponse(request):
     default_app = firebase_admin.initialize_app()
