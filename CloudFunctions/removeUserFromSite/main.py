@@ -8,6 +8,10 @@ import pymysql
 import sqlalchemy
 from firebase import Firebase
 def removeUserFromSite(request):
+   res_headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Authorization',
+   }
    decoded_token = auth.verify_id_token(id_token)
    uid = decoded_token['uid'] 
    db_user = "root"
@@ -23,15 +27,15 @@ def removeUserFromSite(request):
       delete_user_email = request_args['delete_user_email']
       delete_user_email.lower()
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'site_name' in request_args:
       site_id = request_args['site_id']
    else:
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'requestor_uid' in request_args:
       requestor_uid = request_args['requestor_uid']
    else:
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
       
    #connect to the database
    pool = sqlalchemy.create_engine(
@@ -68,4 +72,4 @@ def removeUserFromSite(request):
          delete_user_uid = str(r[0])
          #add new user to site
          conn.execute(sqlalchemy.text("DELETE FROM site_user_role WHERE site_id = {} AND delete_user_uid = {};".format(site_id, delete_user_uid)))
-         return ('', 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+         return ('', 200, res_headers)

@@ -10,7 +10,10 @@ import pymysql
 
 
 def addUserToSite(request):
-
+   res_headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Authorization',
+   }
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
    db_name = "site-user-management"
@@ -24,15 +27,15 @@ def addUserToSite(request):
       new_user_email = request_args['new_user_email']
       new_user_email.lower()
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'role_id' in request_args:
       new_user_role_id = request_args['role_id']
    else:
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'site_name' in request_args:
       site_id = request_args['site_id']
    else:
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'requestor_uid' in request_args:
       requestor_uid = request_args['requestor_uid']
    else:
@@ -76,7 +79,7 @@ def addUserToSite(request):
          new_user_uid = str(r[0])
          #add new user to site
          conn.execute(sqlalchemy.text("INSERT INTO site_user_role values({}, '{}', {});".format(site_id, new_user_uid, new_user_role_id)))
-         return ('', 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+         return ('', 200, res_headers)
 
 
 

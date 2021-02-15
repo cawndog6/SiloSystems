@@ -9,32 +9,36 @@ import pymysql
 
 
 def addParameterToDevice(request):
+   res_headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Authorization',
+   }
    #get arguments to http request
    request_args = request.args
    if request_args and 'site_id' in request_args:
       site_id = request_args['site_id']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'device_id' in request_args:
       device_id = request_args['device_id']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'parameter_name' in request_args:
       parameter_name = request_args['parameter_name']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'uid' in request_args:
       uid = request_args['uid']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'data_val' in request_args:
       data_val = request_args['data_val']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'data_type' in request_args:
       data_type = request_args['data_type']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
 
    #connect to the site-user_management database
    db_user = "root"
@@ -65,7 +69,7 @@ def addParameterToDevice(request):
       AND site_user_role.role_id = 0;""".format(uid, site_id)))
    if int(result.rowcount) == 0:
       print("Error: Site does not exist or user does not have ownership permissions")
-      return('Error: Site does not exist or user does not have ownership permissions', 500, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return('Error: Site does not exist or user does not have ownership permissions', 500, res_headers)
    r = result.fetchone()
    db_name = str(r[0])
    #connect to site's database
@@ -97,7 +101,7 @@ def addParameterToDevice(request):
       parameters.parameter_id = device_parameter.parameter_id where parameters.parameter_name = '{}' AND 
       device_parameter.device_id = {};""".format(parameter_name, device_id)))
    if int(results.rowcount) != 0:
-      return('Error: Parameter already exists for this device', 500, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return('Error: Parameter already exists for this device', 500, res_headers)
    #create table for parameter if it doesnt already exist
    connSiteDB.execute(sqlalchemy.text("""CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, 
       {} {}, PRIMARY KEY(date_time));""".format(parameter_name, data_val, data_type)))
@@ -107,4 +111,4 @@ def addParameterToDevice(request):
    r = results.fetchone()
    parameter_id = r[0]
    connSiteDB.execute(sqlalchemy.text("INSERT INTO device_parameter(device_id, parameter_id) VALUES ({},{});".format(device_id, parameter_id)))
-   return ('', 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+   return ('', 200, res_headers)

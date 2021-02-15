@@ -23,16 +23,20 @@ import pymysql
 import json
 
 def getSiteDeviceInformation(request):
+      res_headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Authorization',
+   }
    #get arguments to http request
    request_args = request.args
    if request_args and 'site_id' in request_args:
        site_id = request_args['site_id']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
    if request_args and 'uid' in request_args:
        uid = request_args['uid']
    else: 
-      return ('', 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return ('', 400, res_headers)
 
 
    #connect to the site-user_management database
@@ -61,7 +65,7 @@ def getSiteDeviceInformation(request):
    #get site's db name & make sure the user is listed as an owner
    result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {};".format(uid, site_id)))
    if int(result.rowcount) == 0:
-      return('Error: Site does not exist or user does not have permission to view', 500, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+      return('Error: Site does not exist or user does not have permission to view', 500, res_headers)
    r = result.fetchone()
    db_name = str(r[0])
    print("db_name: '{}'".format(db_name))
@@ -104,5 +108,5 @@ def getSiteDeviceInformation(request):
       device['parameters'] = [dict(p) for p in paramResults]
       devices['devices'].append(device)
    jsonData = json.dumps(devices)
-   return (jsonData, 200, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'})
+   return (jsonData, 200, res_headers)
     
