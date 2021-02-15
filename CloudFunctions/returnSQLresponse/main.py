@@ -9,13 +9,14 @@ from flask import escape
 import firebase_admin
 from firebase_admin import auth
 def returnSQLresponse(request):
-    default_app = firebase_admin.initialize_app()
+    
     headers = request.headers
     if headers and 'Authorization' in headers:
         token_ID = headers['Authorization']
         print(token_ID)
     else:
-        return ("No Authorization Header", 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'});
+        return ("No Authorization Header", 401, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'});
+    default_app = firebase_admin.initialize_app()
     decoded_token = auth.verify_id_token(token_ID)
     uid = decoded_token['uid'] 
 
