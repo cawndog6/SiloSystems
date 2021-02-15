@@ -9,17 +9,7 @@ from flask import escape
 import firebase_admin
 from firebase_admin import auth
 def returnSQLresponse(request):
-    if request.method == 'OPTIONS':
-        # Allows GET requests from any origin with the Content-Type
-        # header and caches preflight response for an 3600s
-        res_headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET',
-            'Access-Control-Allow-Headers': 'Authorization',
-            'Access-Control-Max-Age': '3600'
-        }
-        return ('', 204, res_headers)
-    # Set CORS headers for the main request
+
     res_headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Authorization',
@@ -27,10 +17,11 @@ def returnSQLresponse(request):
     req_headers = request.headers
     if req_headers and 'Authorization' in req_headers:
         token_ID = req_headers['Authorization']
-        print(token_ID)
     else:
         return ("No Authorization Header", 400, res_headers);
     default_app = firebase_admin.initialize_app()
+    PREFIX = 'Bearer '
+    token_ID = token_ID[len(PREFIX):]
     decoded_token = auth.verify_id_token(token_ID)
     uid = decoded_token['uid'] 
 
