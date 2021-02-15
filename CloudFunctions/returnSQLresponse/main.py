@@ -14,6 +14,8 @@ def returnSQLresponse(request):
     if headers and 'Authorization' in headers:
         token_ID = headers['Authorization']
         print(token_ID)
+    else:
+        return ("No Authorization Header", 400, {'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Authorization'});
     decoded_token = auth.verify_id_token(token_ID)
     uid = decoded_token['uid'] 
 
