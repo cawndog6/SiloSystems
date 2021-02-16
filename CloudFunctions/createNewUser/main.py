@@ -1,9 +1,9 @@
 #Author(s): Connor Williams
 #Date: 2/15/2021
-#Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to add the site to the user/site management database. Also adds the users uid to the site_user_role table as the site owner
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewSite?site_name=myNewSite&uid=abcdabcdjj
-#input: site_name and uid
-#output: returns status code 500 if server cannot create new site or 201 on success
+#Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to create new user in site-user_management database
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewUser?email=user@xxx.com
+#input: email
+#output: returns status code 400 if bad request, 500 if user is not authorized or 200 on success
 import pymysql
 import sqlalchemy
 import firebase_admin
@@ -76,3 +76,5 @@ def createNewUser(request):
    #execute sql statements
    with pool.connect() as conn:
        conn.execute(sqlalchemy.text("INSERT INTO user(uid, email) VALUES('{}', '{}');".format(uid, email)))
+
+   return ("", 200, res_headers)

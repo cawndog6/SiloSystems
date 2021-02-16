@@ -2,7 +2,7 @@
 #Date: 1/7/2021
 #Purpose: Take in arguments from an HTTP request for uid and run sql query to return sites that the user is a member of and allowed to access
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites?uid=hdsfjgkhlsdkhfg
-#input: site_name and uid
+#input: nothing except the authentication header that contains the token_id
 #output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
 import sqlalchemy
 import pymysql
@@ -32,17 +32,7 @@ def getAvailableSites(request):
    db_name = "site-user_management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
-
-   #get arguments to http request
-   request_args = request.args
-
-   if request_args and 'uid' in request_args:
-      uid = request_args['uid']
-   else: 
-      return ('', 400, res_headers)
-
-
-      
+   
    #connect to the database
    pool = sqlalchemy.create_engine(
       # Equivalent URL:
