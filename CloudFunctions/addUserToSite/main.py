@@ -1,8 +1,8 @@
 #Author(s): Connor Williams
 #Date: 1/3/2021
-#Purpose: Take in arguments from an HTTP request for new_user_email, site_name, and requestor_uid and add the user to the site. 
+#Purpose: Take in arguments from an HTTP request for new_user_email, site_name, and uid(of requestor) and add the user to the site. 
 # This will allow the user to view data within the site, but they will not be allowed to manage the site. Those privleges are reserved for site owners.
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite&requestor_uid=abcdabcd
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite
 #input: site_name and uid
 
 import sqlalchemy
@@ -72,8 +72,8 @@ def addUserToSite(request):
     
    #execute sql statements
    with pool.connect() as conn:
-      #check requestor_uid is authenticated as site owner to add new user
-      result = conn.execute(sqlalchemy.text("SELECT role_id from site_user_role where site_id = {} AND uid ='{}';".format(site_id, requestor_uid)))
+      #check uid(of requestor) is authenticated as site owner to add new user
+      result = conn.execute(sqlalchemy.text("SELECT role_id from site_user_role where site_id = {} AND uid ='{}';".format(site_id, uid)))
       if int(result.rowcount) == 0 :
          return ("Error: Site does not exist for the requested user")
       r = result.fetchone()

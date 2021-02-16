@@ -34,8 +34,7 @@ def removeDeviceFromSite(request):
       site_id = request_args['site_id']
    if request_args and 'device_id' in request_args:
       device_id = request_args['device_id']
-   if request_args and 'uid' in request_args:
-      uid = request_args['uid']
+
 
 
 

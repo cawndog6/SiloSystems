@@ -1,7 +1,7 @@
 #Author(s): Connor Williams
 #Date: 1/7/2021
 #Purpose: Take in arguments from an HTTP request for uid and run sql query to return sites that the user is a member of and allowed to access
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites?uid=hdsfjgkhlsdkhfg
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites
 #input: nothing except the authentication header that contains the token_id
 #output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
 import sqlalchemy
@@ -54,7 +54,7 @@ def getAvailableSites(request):
     
    #execute sql statements
    with pool.connect() as conn:
-      #check requestor_uid is authenticated as site owner to add new user
+      #check uid(of requestor) is authenticated as site owner to add new user
       results = conn.execute(sqlalchemy.text("SELECT site.site_id, site.site_name, site_user_role.role_id  FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id WHERE site_user_role.uid = '{}';".format(uid)))
       numRows = int(results.rowcount)
       if numRows < 1:

@@ -1,9 +1,9 @@
 #Author(s): Connor Williams
 #Date: 1/22/2021
-#Purpose: Take in arguments from an HTTP request for delete_user_email, site_name, and requestor_uid and delete the user from the site. 
+#Purpose: Take in arguments from an HTTP request for delete_user_email, site_name, and uid(of the requestor) and delete the user from the site. 
 # This will revoke user privleges to view information about the site
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite&requestor_uid=abcdabcd
-#input: site_name and uid
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addUserToSite?user_email=user@site.com&site_name=mySite
+#input: site_name
 import pymysql
 import sqlalchemy
 import firebase_admin
@@ -45,10 +45,6 @@ def removeUserFromSite(request):
       site_id = request_args['site_id']
    else:
       return ('', 400, res_headers)
-   if request_args and 'requestor_uid' in request_args:
-      requestor_uid = request_args['requestor_uid']
-   else:
-      return ('', 400, res_headers)
       
    #connect to the database
    pool = sqlalchemy.create_engine(
@@ -70,8 +66,8 @@ def removeUserFromSite(request):
     
    #execute sql statements
    with pool.connect() as conn:
-      #check requestor_uid is authenticated as site owner to add new user
-      result = conn.execute(sqlalchemy.text("SELECT role_id from site_user_role where site_id = {} AND uid ='{}';".format(site_id, requestor_uid)))
+      #check uid(of requestor) is authenticated as site owner to add new user
+      result = conn.execute(sqlalchemy.text("SELECT role_id from site_user_role where site_id = {} AND uid ='{}';".format(site_id, uid)))
       if int(result.rowcount) == 0 :
          return ("Error: Site does not exist for the requested user")
       r = result.fetchone()

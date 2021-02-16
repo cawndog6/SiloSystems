@@ -38,10 +38,7 @@ def createNewSite(request):
       site_name = request_args['site_name']
    else: 
       return ('', 400, res_headers)
-   if request_args and 'uid' in request_args:
-      uid = request_args['uid']
-   else: 
-      return ('', 400, res_headers)
+
 
    #connect to the database
    pool = sqlalchemy.create_engine(

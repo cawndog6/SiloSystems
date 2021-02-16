@@ -49,8 +49,8 @@ def createNewUser(request):
    #get arguments to http request
    request_args = request.args
 
-   if request_args and 'uid' in request_args:
-      uid = request_args['uid']
+   if request_args and 'email' in request_args:
+      email = request_args['email']
    else: 
       return ('', 400, res_headers)
 

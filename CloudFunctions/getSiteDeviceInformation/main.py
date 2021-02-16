@@ -2,7 +2,7 @@
 #Date: 1/27/2021
 #Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and return the available devices with their parameters in json format
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?<arguments>
-#input: site_id, uid
+#input: site_id
 #output: returns status code 500 if the site cant be found or the user does not have authorization for the site. Returns 200 on success and the json data, which will look like:
 # {
 #  "devices": [
@@ -45,10 +45,6 @@ def getSiteDeviceInformation(request):
    request_args = request.args
    if request_args and 'site_id' in request_args:
        site_id = request_args['site_id']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'uid' in request_args:
-       uid = request_args['uid']
    else: 
       return ('', 400, res_headers)
 
