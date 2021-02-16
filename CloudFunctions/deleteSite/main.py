@@ -1,14 +1,15 @@
 #Author(s): Connor Williams
 #Date: 1/27/2021
-#Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and return the available devices with their parameters in json format
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?<arguments>
-#input: site_id, uid
-#output: returns status code 400 if bad request, 500 if authorization failed or MySQL query failed, and 200 on success
+#Purpose: Take in arguments from an HTTP request for site_id and run MySQL queries to delete the site's database as well as remove the site from the site-user_management database
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/deleteSite?<arguments>
+#input: site_id
+#output: returns status code 400 if bad request, 500 if authorization failed, and 200 on success
 import sqlalchemy
 import pymysql
 import json
 import firebase_admin
 from firebase_admin import auth
+default_app = firebase_admin.initialize_app()
 def deleteSite(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

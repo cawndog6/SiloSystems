@@ -8,7 +8,7 @@ import sqlalchemy
 import pymysql
 import firebase_admin
 from firebase_admin import auth
-
+default_app = firebase_admin.initialize_app()
 def addDeviceToSite(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

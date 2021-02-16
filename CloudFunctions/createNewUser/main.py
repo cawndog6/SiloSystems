@@ -1,6 +1,7 @@
 #Author(s): Connor Williams
 #Date: 2/15/2021
-#Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to create new user in site-user_management database
+#Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to create new user in site-user_management database. This
+# function has nothing to do with Firebase Authentication. The user must already exist in Firebase Authentication prior to calling this function. 
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewUser?email=user@xxx.com
 #input: email
 #output: returns status code 400 if bad request, 500 if user is not authorized or 200 on success
@@ -8,7 +9,7 @@ import pymysql
 import sqlalchemy
 import firebase_admin
 from firebase_admin import auth
-
+default_app = firebase_admin.initialize_app()
 def createNewUser(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

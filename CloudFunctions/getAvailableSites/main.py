@@ -9,6 +9,7 @@ import pymysql
 import json
 import firebase_admin
 from firebase_admin import auth
+default_app = firebase_admin.initialize_app()
 def getAvailableSites(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

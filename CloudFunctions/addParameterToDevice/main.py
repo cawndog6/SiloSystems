@@ -3,12 +3,12 @@
 #Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and run sql queries to add the the device to the site's database
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/addParameterToDevice<arguments>
 #input: site_id, device_id, uid, parameter_name, data_val, data_type
-#output: returns status code 500 if server cannot create new site or 201 on success
+#output: returns status code 500 if server cannot create new site or 200 on success
 import sqlalchemy
 import pymysql
 import firebase_admin
 from firebase_admin import auth
-
+default_app = firebase_admin.initialize_app()
 def addParameterToDevice(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

@@ -8,7 +8,7 @@ import pymysql
 import sqlalchemy
 import firebase_admin
 from firebase_admin import auth
-
+default_app = firebase_admin.initialize_app()
 def createNewSite(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',

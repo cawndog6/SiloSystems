@@ -1,8 +1,16 @@
+#Author(s): Connor Williams
+#Date: 2/15/2021
+#Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and delete the user account from the site-user_management database. 
+# This function must be called from the user account that is to be deleted.
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/deleteUserAccount?<arguments>
+#input: None other than the token_id in the Authorization header
+#output: returns status code 400 if bad request, 500 if authorization failed, and 200 on success
 import sqlalchemy
 import pymysql
 import json
 import firebase_admin
 from firebase_admin import auth
+default_app = firebase_admin.initialize_app()
 def deleteUserAccount(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',
@@ -23,14 +31,7 @@ def deleteUserAccount(request):
       return ("Error: {}".format(e), 500, res_headers)
 
    request_args = request.args
-   if request_args and 'site_id' in request_args:
-       site_id = request_args['site_id']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'uid' in request_args:
-       uid = request_args['uid']
-   else: 
-      return ('', 400, res_headers)
+
 
 
    #connect to the site-user_management database
