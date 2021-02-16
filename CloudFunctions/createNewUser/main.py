@@ -1,15 +1,15 @@
 #Author(s): Connor Williams
-#Date: 1/7/2021
-#Purpose: Take in arguments from an HTTP request for uid and run sql query to return sites that the user is a member of and allowed to access
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites?uid=hdsfjgkhlsdkhfg
+#Date: 2/15/2021
+#Purpose: Take in arguments from an HTTP request for site_name and uid and run sql queries to add the site to the user/site management database. Also adds the users uid to the site_user_role table as the site owner
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/createNewSite?site_name=myNewSite&uid=abcdabcdjj
 #input: site_name and uid
-#output: Returned string will look something like {"result":[{"role_id":0, "site_name": "theSiteName", "site_id":2}]}
-import sqlalchemy
+#output: returns status code 500 if server cannot create new site or 201 on success
 import pymysql
-import json
+import sqlalchemy
 import firebase_admin
 from firebase_admin import auth
-def getAvailableSites(request):
+
+def createNewSite(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
@@ -27,6 +27,18 @@ def getAvailableSites(request):
    except Exception as e:
       return ("Error: {}".format(e), 500, res_headers)
 
+   db_user = "root"
+   db_pass = "FbtNb8rkjArEwApg"
+   db_name = "site-user_management"
+   db_socket_dir = "/cloudsql"
+   cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
+
+   #get arguments to http request
+   request_args = request.args
+   if request_args and 'email' in request_args:
+      email = request_args['email']
+   else: 
+      return ('', 400, res_headers)
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
    db_name = "site-user_management"
@@ -63,13 +75,4 @@ def getAvailableSites(request):
     
    #execute sql statements
    with pool.connect() as conn:
-      #check requestor_uid is authenticated as site owner to add new user
-      results = conn.execute(sqlalchemy.text("SELECT site.site_id, site.site_name, site_user_role.role_id  FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id WHERE site_user_role.uid = '{}';".format(uid)))
-      numRows = int(results.rowcount)
-      if numRows < 1:
-         return ('No sites are available for this user', 500, {'Access-Control-Allow_Origin':'*'})
-      else:
-         JSONresults = json.dumps({'result': [dict(row) for row in results]})
-         return (JSONresults, 200, res_headers)
-
-
+       conn.execute(sqlalchemy.text("INSERT INTO user(uid, email) VALUES('{}', '{}');".format(uid, email)))
