@@ -9,7 +9,7 @@ import sqlalchemy
 import firebase_admin
 from firebase_admin import auth
 
-def createNewSite(request):
+def createNewUser(request):
    res_headers = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
