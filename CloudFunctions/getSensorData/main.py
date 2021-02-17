@@ -34,6 +34,8 @@ def getSensorData(request):
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Authorization',
    }
+   if request.method =='OPTIONS':
+      return ("", 204, res_headers)
    #Authenticate user calling the function
    req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
