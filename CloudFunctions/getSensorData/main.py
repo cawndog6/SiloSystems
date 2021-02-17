@@ -114,7 +114,7 @@ def getSensorData(request):
       )
    )
    connSiteDB = pool.connect()
-   results = connSiteDB.execute(sqlalchemy.text("SELECT * FROM parameters where parameter_id = {};".format(parameter_id)))
+   results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_name FROM parameters where parameter_id = {};".format(parameter_id)))
    if int(result.rowcount) == 0:
       return ('Error: Parameter does not exist.', 500, res_headers)
    r = results.fetchone()
