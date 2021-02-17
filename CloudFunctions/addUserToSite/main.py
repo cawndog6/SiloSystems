@@ -12,8 +12,8 @@ from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
 def addUserToSite(request):
    res_headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Authorization',
+      'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
+      'Access-Control-Allow-Headers': 'Authorization'
    }
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
