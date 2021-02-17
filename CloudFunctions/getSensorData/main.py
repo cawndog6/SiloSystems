@@ -7,17 +7,21 @@
 #input: site_id, device_id(optional), parameter_id, from_date(optional)
 #output: returns status code 500 if error (and an error message). Returns 200 on success and the json data, which will look like:
 # {
-#  "devices": [
-#   {
+#  "device_id":1,
+#  "device_name":"Biolab Pi",
+#  "parameter_id":1,
+#  "parameter_name":"temperature",
+#  "data":[
+#  {
+#     "date_time": "2020-10-10 13:24:04", 
 #     "device_id": 1, 
-#     "device_name": "biolabPi", 
-#     "parameters": [
-#        {
-#        "parameter_name": "temperature",
-#        "parameter_id": 1
-#         }
-#      ]
-#   }]
+#     "reading": 60
+#  }, 
+#  {
+#     "date_time": "2020-10-10 13:24:05", 
+#     "device_id": 1, 
+#     "reading": 61
+#  }]
 # }
 import sqlalchemy
 import pymysql
@@ -120,16 +124,16 @@ def getSensorData(request):
    r = results.fetchone()
    parameter_name = str(r[0])
    if device_id is not None:
-      results = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices where device_id = {};".format(device_id)))
+      results = connSiteDB.execute(sqlalchemy.text("SELECT device_name FROM devices where device_id = {};".format(device_id)))
       if int(result.rowcount) == 0:
          return ('Error: Device does not exist.', 500, res_headers)
       r = results.fetchone()
       device_name = str(r[0])
       results = connSiteDB.execute(sqlalchemy.text("SELECT * FROM {} where device_id = {};".format(parameter_name, device_id)))
       JSONresults = {}
-      JSONresults['device_id'] = device_id
+      JSONresults['device_id'] = int(device_id)
       JSONresults['device_name'] = device_name
-      JSONresults['parameter_id'] = parameter_id
+      JSONresults['parameter_id'] = int(parameter_id)
       JSONresults['parameter_name'] = parameter_name
       JSONresults['data'] = [dict(r) for r in results]
       JSONresults = json.dumps(JSONresults, default = str)
@@ -137,7 +141,7 @@ def getSensorData(request):
    else:
       results = connSiteDB.execute(sqlalchemy.text("SELECT * FROM {} ;".format(parameter_name)))
       JSONresults = {}
-      JSONresults['parameter_id'] = parameter_id
+      JSONresults['parameter_id'] = int(parameter_id)
       JSONresults['parameter_name'] = parameter_name
       JSONresults['data'] = [dict(r) for r in results]
       JSONresults = json.dumps(JSONresults, default = str)
