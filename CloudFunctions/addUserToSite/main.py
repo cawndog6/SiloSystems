@@ -15,6 +15,8 @@ def addUserToSite(request):
       'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
       'Access-Control-Allow-Headers': 'Authorization'
    }
+   if request.method =='OPTIONS':
+      return ("", 204, res_headers)
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
    db_name = "site-user-management"

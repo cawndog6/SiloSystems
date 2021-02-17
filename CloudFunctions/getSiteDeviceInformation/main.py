@@ -28,6 +28,8 @@ def getSiteDeviceInformation(request):
       'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
       'Access-Control-Allow-Headers': 'Authorization'
    }
+   if request.method =='OPTIONS':
+      return ("", 204, res_headers)
    #get arguments to http request
    req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
