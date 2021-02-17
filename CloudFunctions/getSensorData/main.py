@@ -132,7 +132,7 @@ def getSensorData(request):
       JSONresults['parameter_id'] = parameter_id
       JSONresults['parameter_name'] = parameter_name
       JSONresults['data'] = [dict(r) for r in results]
-      JSONresults = json.dumps(JSONresults)
+      JSONresults = json.dumps(JSONresults, default = str)
       return (JSONresults, 200, res_headers)
    else:
       results = connSiteDB.execute(sqlalchemy.text("SELECT * FROM {} ;".format(parameter_name)))
@@ -140,6 +140,6 @@ def getSensorData(request):
       JSONresults['parameter_id'] = parameter_id
       JSONresults['parameter_name'] = parameter_name
       JSONresults['data'] = [dict(r) for r in results]
-      JSONresults = json.dumps(JSONresults)
+      JSONresults = json.dumps(JSONresults, default = str)
       return (JSONresults, 200, res_headers)
 
