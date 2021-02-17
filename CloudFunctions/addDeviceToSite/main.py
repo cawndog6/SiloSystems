@@ -11,9 +11,11 @@ from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
 def addDeviceToSite(request):
    res_headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Authorization',
+      'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
+      'Access-Control-Allow-Headers': 'Authorization'
    }
+   if request.method =='OPTIONS':
+      return ("", 204, res_headers)
    req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
