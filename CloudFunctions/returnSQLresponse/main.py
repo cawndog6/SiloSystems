@@ -75,6 +75,7 @@ def returnSQLresponse(request):
     
     #execute sql statement
     with pool.connect() as conn:
+        
         results = conn.execute(sqlalchemy.text("SELECT * FROM {} WHERE deviceId = {};".format(sensor, deviceID)));
 
     #assemble JSON from results to be returned

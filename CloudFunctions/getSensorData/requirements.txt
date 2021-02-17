@@ -1,0 +1,4 @@
+PyMySQL
+sqlalchemy
+firebase-admin
+json
