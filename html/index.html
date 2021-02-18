@@ -11,30 +11,42 @@
         <script type="text/javascript" src="manage.js"></script>
         <script type="text/javascript">
             function StartLoad() {
+                ShowLoading();
                 UpdateUserDisplay();
-                LoadSiteList();
+                if(currentToken === undefined) {
+                    UnshowLoading();
+                    return;
+                }
                 Promise.all([
-                    google.charts.load('current', {'packages':['corechart']}),
-                    Get("shim_sensors")
-                ]).then(DrawSensorTable);
+                    LoadSiteList().then(LoadSensorTable),
+                    google.charts.load('current', {'packages':['corechart']})
+                ]).then(UnshowLoading);
             }
 
-            
-        window.addEventListener("load", StartLoad);
+            window.addEventListener("load", StartLoad);
         </script>
     </head>
     <body>
+        <div id="loading-overlay" class="hidden">
+            <div id="loading-box">
+                <canvas id="loading-wheel" class="" height="100px" width="100px"></canvas>
+            </div>
+        </div>
         <header>
             <a href="index.html" id="title-link"><img src="logo.png" id="logo">Silo Systems Lab Companion</a>
             <nav>
                 <select id="site-selector" disabled>
-                    <option value="default">Select a site</option>
+                    <option>No sites found</option>
                 </select>
                 <span id="current-user">You are not logged in. </span>
-                (<a href="#" id="show-login-link" onclick="ShowLogin();">Log in</a><a href="#" id="logout-link" class="hidden" onclick="Logout();">Log out</a>)
+                (<a href="#" id="show-login-link" onclick="ShowLogin();">Log in</a><span id="logged-in-links" class="hidden"><a href="#" id="manage-link" onclick="ShowManage();">Manage</a> | <a href="#" id="logout-link" onclick="Logout();">Log out</a></span>)
             </nav>
         </header>
         <main>
+            <div id="welcome-message">
+                <h1>Welcome to Silo Systems Lab Companion!</h1>
+                <h2>Click on the link in the top right to log in.</h2>
+            </div>
             <table id="sensor-table" class="hidden">
                 <thead>
                     <tr><th>Device ID</th><th>Device Nickname</th><th>Sensor ID</th><th>Sensor Type</th><th>View Data</th><th>Download Data</th></tr>
@@ -44,7 +56,7 @@
             <div id="data-chart"></div>
         </main>
         <footer>
-            Copyright 2020 Silo Systems and the University of Idaho
+            Copyright 2021 Silo Systems and the University of Idaho
         </footer>
         <template>
             <div id="login">
@@ -56,8 +68,8 @@
                         <input type="email" name="user" placeholder="Email address" required>
                         <input type="password" name="password" placeholder="Password" required>
                         <table class="noborder"><tr class="noborder">
-                            <td class="leftalign noborder"><label>Remember me? <input type="checkbox" name="remember"></label></td>
-                            <td class="rightalign noborder"><a href="#" onclick="RequestPasswordReset();">Forgot password</a></td>
+                            <td class="noborder" colspan="2"><label style="display:none;">Remember me? <input type="checkbox" name="remember"></label><!--</td>
+                            <td class="rightalign noborder">--><a href="#" onclick="RequestPasswordReset();">Forgot password</a></td>
                         </tr></table>
                         <input type="submit" value="Submit">
                         <input type="button" value="Sign up as a new user" onclick="ShowSignup();">
@@ -82,6 +94,85 @@
                     </form>
                     <div id="login-message-box" class="hidden">
                     </div>
+                </div>
+            </div>
+            <div id="manage">
+                <a href="#" id="unshow-manage-link" onclick="UnshowManage();">&#x2716;</a>
+                <div id="manage-box">
+                    <span id="manage-header">Manage Lab Companion</span>
+                    <br><br>
+                    <section id="manage-devices">
+                        <strong>Manage My Devices</strong>
+                        <br><br>
+                        Add Device to Site
+                        <form id="manage-add-device" onsubmit="AddDeviceToSite(event); return false;">
+                            <select id="site-selector-add" disabled>
+                                <option>No sites found</option>
+                            </select>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="text" name="newDeviceName" placeholder="New device name">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form><br>
+                        Add Parameter to Device
+                        <form id="manage-add-parameter" onsubmit="AddParameterToDevice(event); return false;">
+                            <select id="device-selector-add" disabled>
+                                <option>No devices found</option>
+                            </select>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="text" name="newParameterName" placeholder="New parameter name">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="text" name="newDataValue" size="10" placeholder="New data value">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="text" name="newDataType" size="10" placeholder="New data type">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form><br>
+                        Remove Device from Site
+                        <form id="manage-remove-device" onsubmit="RemoveDeviceFromSite(event); return false;">
+                            <select id="device-selector-remove" disabled>
+                                <option>No devices found</option>
+                            </select>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="text" name="confirmRemove" placeholder="Type YES to delete">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form>
+                    </section>
+                    <section id="manage-sites">
+                        <strong>Manage My Sites</strong>
+                        <br><br>
+                        Create New Site
+                        <form id="manage-add-site" onsubmit="CreateNewSite(event); return false;">
+                            <input type="text" name="newSiteName" placeholder="New site name">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form>
+                    </section>
+                    <section id="manage-users">
+                        <strong>Manage My Users</strong>
+                        <br><br>
+                        Add User to Site
+                        <form id="manage-add-user" onsubmit="AddUserToSite(event); return false;">
+                            <select id="site-selector-user-add" disabled>
+                                <option>No sites found</option>
+                            </select>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="email" name="newUserEmail" placeholder="User email to add">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form><br>
+                        Remove User from Site
+                        <form id="manage-remove-user" onsubmit="RemoveUserFromSite(event); return false;">
+                            <select id="site-selector-user-remove" disabled>
+                                <option>No sites found</option>
+                            </select>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="email" name="deleteUserEmail" placeholder="User email to delete">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form>
+                    </section>
                 </div>
             </div>
         </template>

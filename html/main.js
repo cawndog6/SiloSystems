@@ -25,16 +25,44 @@ function Log(thisLevel, msg) {
     }
 }
 
+function ShowLoading() {
+    let loadingOverlay = document.getElementById("loading-overlay");
+    let loadingCanvas = document.getElementById("loading-wheel");
+
+    let ctx = loadingCanvas.getContext("2d");
+
+    ctx.fillStyle = '#aaa';
+
+    ctx.beginPath();
+    ctx.arc(50, 50, 35, 0, Math.PI * 1.8);
+    
+    ctx.arc(50, 50, 25, Math.PI * 1.8, 0, true);
+    ctx.lineTo(85, 50);
+    ctx.fill();
+
+    loadingOverlay.classList.remove("hidden");
+    loadingCanvas.classList.add("animate");
+
+    setTimeout(UnshowLoading, 20000); //in case the load fails, remove loader after 20sec
+}
+
+function UnshowLoading() {
+    let loadingOverlay = document.getElementById("loading-overlay");
+    let loadingCanvas = document.getElementById("loading-wheel");
+
+    loadingCanvas.classList.remove("animate");
+    loadingOverlay.classList.add("hidden");
+}
+
 async function Get(url, isJson) {
     if(isJson === undefined) {
         isJson = true;
     }
 
     let init;
-    if(true || currentToken === undefined || url.substring(0,apiRoot.length) != apiRoot) {    //don't send auth header to outside requests
+    if(currentToken === undefined || url.substring(0,apiRoot.length) != apiRoot) {    //don't send auth header to outside requests
         init = {};
     } else {
-        //disabled 2/14 pending Access-Control-Allow-Headers update on the server
         init = {'headers': new Headers({'Authorization': `Bearer ${currentToken}`})};
     }
 
@@ -59,10 +87,9 @@ async function Post(url, body, isJson) {
     }
 
     let init;
-    if(true || currentToken === undefined || url.substring(0,apiRoot.length-1) != apiRoot) {    //don't send auth header to outside requests
+    if(currentToken === undefined || url.substring(0,apiRoot.length-1) != apiRoot) {    //don't send auth header to outside requests
         init = {"headers": new Headers({"Authorization": `Bearer ${currentToken}`}), "method": "POST", "body": body} 
     } else {
-        //disabled 2/14 pending Access-Control-Allow-Headers update on the server
         init = {"method": "POST", "body": body}
     }
     let response = await fetch(url, init);
@@ -129,10 +156,10 @@ function DrawLineChart(dataTable, x_title, y_title, width, height, vAxis_fmt) {
 
 //################# DATA FUNCTIONS ########################
 
-function LoadSiteList() {
+async function LoadSiteList() {
     let siteList = document.getElementById("site-selector");
 
-    GetAvailableSites().then((response)=> {
+    return await GetAvailableSites().then((response)=> {
         if(response == -1) {
             return;
         }
@@ -142,6 +169,9 @@ function LoadSiteList() {
         });
 
         Array.from(response.result).forEach((site)=> {
+            if(site.site_id == 11) {    //TODO temporary fix for broken site
+                return;
+            }
             let listItem = document.createElement("option");
             listItem.innerText = site.site_name;
             listItem.id = `site_${site.site_id}`;
@@ -165,86 +195,126 @@ function LoadSiteList() {
     });
 }
 
-function ChangeSite(evt) {
-    let newSite = evt.target.options[evt.target.selectedIndex].id;
+function ChangeSite(event) {
+    ShowLoading();
+    let newSite = event.target.options[event.target.selectedIndex].id;
     currentSite = newSite;
     SetUserCookies(undefined, undefined, newSite, true);
+    LoadSensorTable().then(UnshowLoading);
 }
 
-function DrawSensorTable(response) {
+async function LoadSensorTable() {
     let sensorTable = document.getElementById("sensor-table").tBodies[0];
 
-    response = response[1];
+    return await GetSiteDeviceInformation(currentSite.split("_")[1]).then((response)=> {
+        Array.from(sensorTable.children).forEach((tableChild)=> {
+            tableChild.remove();
+        });
 
-    response.sensors.forEach((sensor)=> {
-        let row = sensorTable.insertRow();
-
-        let deviceIdCell = row.insertCell();
-        deviceIdCell.appendChild(document.createTextNode(sensor.deviceId));
-
-        let deviceNameCell = row.insertCell();
-        deviceNameCell.appendChild(document.createTextNode(sensor.deviceName));
-
-        let sensorIdCell = row.insertCell();
-        sensorIdCell.appendChild(document.createTextNode(sensor.sensorId));
-
-        let sensorNameCell = row.insertCell();
-        sensorNameCell.appendChild(document.createTextNode(sensor.sensorName));
-
-        let viewCell = row.insertCell();
-        let viewLink = document.createElement("a");
-        viewLink.href = "#";
-        viewLink.id = `v-${sensor.deviceId}`; //-${sensor.sensorId}`;
-        viewLink.onclick = ViewSensor;
-        viewLink.appendChild(document.createTextNode("View Data"));
-        viewCell.appendChild(viewLink);
-
-        let downloadCell = row.insertCell();
-        let downloadLink = document.createElement("a");
-        downloadLink.href = "#";
-        downloadLink.id = `d-${sensor.deviceId}`; //-${sensor.sensorId}`;
-        downloadLink.onclick = DownloadSensor;
-        downloadLink.appendChild(document.createTextNode("Download Data"));
-        downloadCell.appendChild(downloadLink);
-    });
-
-    sensorTable.parentElement.classList.remove("hidden");
-}
-
-function ViewSensor(event) {
-    if(currentToken === undefined) {
-        alert("Sorry, you must be logged in to perform that action. Please log in and try again.");
-        return;
-    }
-
-    let fullId = event.target.id;
-    let id = fullId.substring(2);
-
-    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then((response)=> {
-        DrawLineChart(response.data.map(row => [new Date(row.date), row.value]), "Date", response.sensorName, "100%", "400px", (response.sensorName.indexOf("%") > -1 ? "percent" : "decimal"))
+        response.devices.forEach((device)=> {
+            device.parameters.forEach((parameter)=> {
+                let row = sensorTable.insertRow();
+    
+                let deviceIdCell = row.insertCell();
+                deviceIdCell.appendChild(document.createTextNode(device.device_id));
+        
+                let deviceNameCell = row.insertCell();
+                deviceNameCell.appendChild(document.createTextNode(device.device_name));
+        
+                let parameterIdCell = row.insertCell();
+                parameterIdCell.appendChild(document.createTextNode(parameter.parameter_id));
+        
+                let parameterNameCell = row.insertCell();
+                parameterNameCell.appendChild(document.createTextNode(parameter.parameter_name));
+        
+                let viewCell = row.insertCell();
+                let viewLink = document.createElement("a");
+                viewLink.href = "#";
+                viewLink.id = `v-${device.device_id}-${parameter.parameter_id}`;
+                viewLink.onclick = ViewSensor;
+                viewLink.appendChild(document.createTextNode("View Data"));
+                viewCell.appendChild(viewLink);
+        
+                let downloadCell = row.insertCell();
+                let downloadLink = document.createElement("a");
+                downloadLink.href = "#";
+                downloadLink.id = `d-${device.device_id}-${parameter.parameter_id}`;
+                downloadLink.onclick = DownloadSensor;
+                downloadLink.appendChild(document.createTextNode("Download Data"));
+                downloadCell.appendChild(downloadLink);
+            });  
+        });
+        document.getElementById("welcome-message").classList.add("hidden");
+        sensorTable.parentElement.classList.remove("hidden");
     });
 }
 
-function DownloadSensor(event) {
-    if(currentToken === undefined) {
-        alert("Sorry, you must be logged in to perform that action. Please log in and try again.");
-        return;
+async function GetSensorData(site_id, parameter_id, device_id, from_date) {
+    site_id = encodeURIComponent(site_id);
+    parameter_id = encodeURIComponent(parameter_id);
+    if(device_id !== undefined) {
+        device_id = encodeURIComponent(device_id);
+    }
+    if(from_date !== undefined) {
+        from_date = encodeURIComponent(from_date);
     }
 
-    let fullId = event.target.id;
-    let id = fullId.substring(2);
+    let queryString;
+    let errString;
+
+    if(device_id == undefined && from_date == undefined) {
+        queryString = `site_id=${site_id}&parameter_id=${parameter_id}`;
+        errString = `Failed to get data for ${parameter_id} in site ${site_id}`;
+    }
+    else if(device_id == undefined) {
+        queryString = `site_id=${site_id}&parameter_id=${parameter_id}&from_date=${from_date}`;
+        errString = `Failed to get data for ${parameter_id} in site ${site_id} from date ${from_date}`;
+    }
+    else if(from_date == undefined) {
+        queryString = `site_id=${site_id}&device_id=${device_id}&parameter_id=${parameter_id}`;
+        errString = `Failed to get data for ${parameter_id} on device ${device_id} in site ${site_id}`;
+    }
+    else {
+        queryString = `site_id=${site_id}&device_id=${device_id}&parameter_id=${parameter_id}&from_date=${from_date}`;
+        errString = `Failed to get data for ${parameter_id} on device ${device_id} in site ${site_id} from date ${from_date}`;
+    }
+
+    return await Get(`${apiRoot}/getSensorData?${queryString}`).catch((err)=> {
+        Log(logLevel.ERROR, `${errString}: ${err}`);
+        return -1;
+    }).then((response)=> {
+        return response;
+    });
+}
+
+async function ViewSensor(event) {
+    ShowLoading();
+    let idParts = event.target.id.split("-");
+
+    return await GetSensorData(currentSite.split("_")[1], idParts[2]).then((response)=> {
+        DrawLineChart(response.data.map(row => [new Date(row.date_time), row.reading]), "Date", response.parameter_name, "100%", "400px", (response.parameter_name.indexOf("%") > -1 ? "percent" : "decimal"));
+        UnshowLoading();
+    });
+}
+
+async function DownloadSensor(event) {
+    ShowLoading();
 
     let today = FormatDate(new Date());
 
-    Get(`${apiRoot}/returnSQLresponse?sensor=Temperatures&deviceID=${id}`).then((response)=> {
-        let download = `Date,${response.sensorName}\n`;
-        download += response.data.map(row => `${FormatDate(new Date(row.date))},${row.value}`).join('\n');
+    let idParts = event.target.id.split("-");
 
-        let dummyLink = document.createElement("a");
-        dummyLink.href = `data:text/csv;charset=utf-8,${encodeURI(download)}`;
-        dummyLink.target = "_blank";
-        dummyLink.download = `Download_${id}_${today}.csv`;
-        dummyLink.click();
-        dummyLink.remove();
+    return await GetSensorData(currentSite.split("_")[1], idParts[2]).then((response)=> {
+        let download = `Date,${response.parameter_name}\n`;
+        download += response.data.map(row => `${FormatDate(new Date(row.date_time))},${row.reading}`).join('\n');
+
+        let invisibleLink = document.createElement("a");
+        invisibleLink.href = `data:text/csv;charset=utf-8,${encodeURI(download)}`;
+        invisibleLink.target = "_blank";
+        invisibleLink.download = `Download_${id}_${today}.csv`;
+        invisibleLink.click();
+        invisibleLink.remove();
+
+        UnshowLoading();
     });
 }

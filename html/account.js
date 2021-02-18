@@ -49,18 +49,18 @@ function SetUserCookies(user, token, site, remember) {
 function UpdateUserDisplay() {
     let userDisplay = document.getElementById("current-user");
     let loginLink = document.getElementById("show-login-link");
-    let logoutLink = document.getElementById("logout-link");
+    let loggedInLinks = document.getElementById("logged-in-links");
 
     if(document.cookie.indexOf("user=") == -1) {
         userDisplay.innerText = "You are not logged in. ";
         loginLink.classList.remove("hidden");
-        logoutLink.classList.add("hidden");
+        loggedInLinks.classList.add("hidden");
     } else {
         currentToken = document.cookie.split("token=")[1].split(";")[0];
         let user = document.cookie.split("user=")[1].split(";")[0];
         userDisplay.innerHTML = `Currently logged in as <strong>${user}</strong>`;
         loginLink.classList.add("hidden");
-        logoutLink.classList.remove("hidden");
+        loggedInLinks.classList.remove("hidden");
     }
 }
 
@@ -137,10 +137,15 @@ function Login() {
         console.log(token)
         Log(level.DEBUG, `Successful ${(remember) ? "persistent":"session"} login for user ${user}`);
 
-        SetUserCookies(user, token.user.refreshToken, undefined, remember);
+        ShowLoading();
+
+        SetUserCookies(user, token.user.ya, undefined, remember);
 
         UpdateUserDisplay();
+        LoadSiteList().then(LoadSensorTable);
         UnshowLogin();
+
+        UnshowLoading();
     });
 }
 
@@ -221,14 +226,19 @@ function Signup() {
     auth.createUserWithEmailAndPassword(user, password).catch((err)=> {
         Log(level.WARNING, `Signup failed with a ${err.code} error`);
 
-        err = JSON.parse(err.message);
-
-        if(err.error.message.substring(err.error.message.length-1) == ".") {
-            ShowLoginMessage(`Error: ${err.error.message}`, loginMessageLevel.ERROR);
+        if(typeof err == "string") {
+            err = JSON.parse(err.message);
+            if(err.error.message.substring(err.error.message.length-1) == ".") {
+                ShowLoginMessage(`Error: ${err.error.message}`, loginMessageLevel.ERROR);
+            }
+            else {
+                ShowLoginMessage(`Error: ${err.error.message}.`, loginMessageLevel.ERROR);
+            }
         }
         else {
-            ShowLoginMessage(`Error: ${err.error.message}.`, loginMessageLevel.ERROR);
+            ShowLoginMessage(`Error: ${err.message}`, loginMessageLevel.ERROR);
         }
+
         return undefined;
     }).then((token)=> {
         if(token === undefined) {
@@ -237,7 +247,7 @@ function Signup() {
 
         Log(level.DEBUG, `Successful registration for user ${user}`);
         
-        SetUserCookies(user, token, undefined, false);
+        SetUserCookies(user, token.user.ya, undefined, false);
 
         UpdateUserDisplay();
         UnshowLogin();
