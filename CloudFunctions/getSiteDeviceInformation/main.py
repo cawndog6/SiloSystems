@@ -104,9 +104,7 @@ def getSiteDeviceInformation(request):
          }
       )
    )
-   print("about to connect")
    connSiteDB = pool.connect()
-   print("connected")
    deviceResults = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices;"))
    #assemble json string
    devices = {'devices': []}
@@ -120,5 +118,6 @@ def getSiteDeviceInformation(request):
       device['parameters'] = [dict(p) for p in paramResults]
       devices['devices'].append(device)
    jsonData = json.dumps(devices)
+   print(jsonData)
    return (jsonData, 200, res_headers)
     
