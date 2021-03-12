@@ -119,5 +119,6 @@ def getSiteDeviceInformation(request):
       devices['devices'].append(device)
    jsonData = json.dumps(devices)
    print(jsonData)
+   print("hi)")
    return (jsonData, 200, res_headers)
     
