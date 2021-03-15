@@ -39,6 +39,10 @@ def addDeviceToSite(request):
        device_name = request_args['device_name']
    else: 
       return ('', 400, res_headers)
+   if request_args and 'device_id' in request_args:
+      device_id = request_args['device_id']
+   else:
+      device_id = None
 
 
    #connect to the site-user_management database
@@ -94,6 +98,9 @@ def addDeviceToSite(request):
       )
    )
    connSiteDB = pool.connect()
-   connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name) VALUES ('{}');".format(device_name)))
+   if device_id is not None:
+      connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name, device_id) VALUES ('{}', {});".format(device_name), int(device_id)))
+   else: 
+      connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name) VALUES ('{}');".format(device_name)))
    return ('', 200, res_headers)
     
