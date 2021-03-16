@@ -28,7 +28,7 @@ def addDeviceToSite(request):
       decoded_token = auth.verify_id_token(id_token)
       uid = decoded_token['uid']
    except Exception as e:
-      return ("Error: {}".format(e), 500, res_headers)
+      return ("Error: {}".format(e), 511, res_headers)
 
    #get arguments to http request
    request_args = request.args

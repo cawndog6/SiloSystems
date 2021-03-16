@@ -87,8 +87,8 @@ def removeDeviceFromSite(request):
       database=db_name,  # e.g. "my-database-name"
       query={
          "unix_socket": "{}/{}".format(
-             db_socket_dir,  # e.g. "/cloudsql"
-             cloud_sql_connection_name)  # i.e "<PROJECT-NAME>:<INSTANCE-REGION>:<INSTANCE-NAME>"
+            db_socket_dir,  # e.g. "/cloudsql"
+            cloud_sql_connection_name)  # i.e "<PROJECT-NAME>:<INSTANCE-REGION>:<INSTANCE-NAME>"
       })
    )
    #delete device
