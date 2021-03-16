@@ -22,7 +22,7 @@ def removeDeviceFromSite(request):
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
    else:
-      return ("No Authorization Header", 400, res_headers);
+      return ("No Authorization Header", 400, res_headers)
    PREFIX = 'Bearer '
    id_token = id_token[len(PREFIX):]
    try:
@@ -72,7 +72,7 @@ def removeDeviceFromSite(request):
    #connect to site's database
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
-   db_name = "{}{}".format(db_name)
+   db_name = "{}".format(db_name)
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
