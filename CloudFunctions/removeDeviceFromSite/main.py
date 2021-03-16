@@ -50,7 +50,7 @@ def removeDeviceFromSite(request):
    pool = sqlalchemy.create_engine(
       # Equivalent URL:
       #mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=<socket_path>/<cloud_sql_instance_name>
-      #        sqlalchemy.engine.url.URL(
+      sqlalchemy.engine.url.URL(
       drivername="mysql+pymysql",
       username=db_user,  # e.g. "my-database-user"
       password=db_pass,  # e.g. "my-database-password"
