@@ -6,6 +6,7 @@
 #output: returns status code 500 if server cannot create new site or 201 on success
 import sqlalchemy
 import pymysql
+from sqlalchemy import sql
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
@@ -99,7 +100,11 @@ def addDeviceToSite(request):
    )
    connSiteDB = pool.connect()
    if device_id is not None:
-      connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name, device_id) VALUES ('{}', {});".format(device_name), int(device_id)))
+      result = connSiteDB.execute(sqlalchemy.text("SELECT * FROM device WHERE device_name = '{}';".format(device_name)))
+      if int(result.rowcount) == 0:
+         connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name, device_id) VALUES ('{}', {});".format(device_name, int(device_id))))
+      else:
+         connSiteDB.execute(sqlalchemy.text("UPDATE devices SET device_id = {} WHERE site_name = '{}'".format(int(device_id), device_name)))
    else: 
       connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name) VALUES ('{}');".format(device_name)))
    return ('', 200, res_headers)
