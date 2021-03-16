@@ -104,7 +104,7 @@ def addDeviceToSite(request):
       if int(result.rowcount) == 0:
          connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name, device_id) VALUES ('{}', {});".format(device_name, int(device_id))))
       else:
-         connSiteDB.execute(sqlalchemy.text("UPDATE devices SET device_id = {} WHERE site_name = '{}'".format(int(device_id), device_name)))
+         connSiteDB.execute(sqlalchemy.text("UPDATE devices SET device_id = {} WHERE device_name = '{}'".format(int(device_id), device_name)))
    else: 
       connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name) VALUES ('{}');".format(device_name)))
    return ('', 200, res_headers)
