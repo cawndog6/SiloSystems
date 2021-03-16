@@ -100,7 +100,7 @@ def addDeviceToSite(request):
    )
    connSiteDB = pool.connect()
    if device_id is not None:
-      result = connSiteDB.execute(sqlalchemy.text("SELECT * FROM device WHERE device_name = '{}';".format(device_name)))
+      result = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices WHERE device_name = '{}';".format(device_name)))
       if int(result.rowcount) == 0:
          connSiteDB.execute(sqlalchemy.text("INSERT INTO devices(device_name, device_id) VALUES ('{}', {});".format(device_name, int(device_id))))
       else:
