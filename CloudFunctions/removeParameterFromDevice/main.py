@@ -1,15 +1,16 @@
 #Author(s): Connor Williams
-#Date: 1/21/2021
+#Date: 3/19/2021
 #Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and run sql queries to add the the device to the site's database
 #Trigger: dearguments>
-#input: site_id, device_id, uid, parameter_name, data_val, data_type
+#input: site_id, device_id, parameter_id
 #output: returns status code 500 if server cannot create new site or 200 on success
 import sqlalchemy
 import pymysql
+from sqlalchemy import sql
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
-def addParameterToDevice(request):
+def removeParameterFromDevice(request):
    res_headers = {
       'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
       'Access-Control-Allow-Headers': 'Authorization'
@@ -38,16 +39,8 @@ def addParameterToDevice(request):
       device_id = request_args['device_id']
    else: 
       return ('', 400, res_headers)
-   if request_args and 'parameter_name' in request_args:
-      parameter_name = request_args['parameter_name']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'data_val' in request_args:
-      data_val = request_args['data_val']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'data_type' in request_args:
-      data_type = request_args['data_type']
+   if request_args and 'parameter_id' in request_args:
+      parameter_id = request_args['parameter_id']
    else: 
       return ('', 400, res_headers)
 
@@ -108,20 +101,12 @@ def addParameterToDevice(request):
    )
    connSiteDB = pool.connect()
    #check if parameter already exists for the device its being added to
-   results = connSiteDB.execute(sqlalchemy.text("""SELECT * from parameters INNER JOIN device_parameter ON 
-      parameters.parameter_id = device_parameter.parameter_id where parameters.parameter_name = '{}' AND 
-      device_parameter.device_id = {};""".format(parameter_name, device_id)))
-   if int(results.rowcount) != 0:
-      return('Error: Parameter already exists for this device', 500, res_headers)
-   #create table for parameter if it doesnt already exist
-   connSiteDB.execute(sqlalchemy.text("""CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, 
-      {} {}, PRIMARY KEY(date_time));""".format(parameter_name, data_val, data_type)))
-   results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
+   results = connSiteDB.execute(sqlalchemy.text("""SELECT * from device_parameter parameter_id = {} AND device_id = {};""".format(parameter_id, device_id)))
    if int(results.rowcount) == 0:
-      connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
-   #add parameter to the device
-   results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
-   r = results.fetchone()
-   parameter_id = r[0]
-   connSiteDB.execute(sqlalchemy.text("INSERT INTO device_parameter(device_id, parameter_id) VALUES ({},{});".format(device_id, parameter_id)))
+      return('Error: Parameter does not exists for this device', 500, res_headers)
+   elif int(results.rowcount) == 1:
+      connSiteDB.execute(sqlalchemy.text("DELETE FROM device_parameter WHERE parameter_id = {} AND device_id = {}".format(parameter_id, device_id)))
+      connSiteDB.execute(sqlalchemy.text("DELETE FROM parameters WHERE parameter_id = {}".format(parameter_id)))
+   else:
+      connSiteDB.execute(sqlalchemy.text("DELETE FROM device_parameter WHERE parameter_id = {} AND device_id = {}".format(parameter_id, device_id)))
    return ('', 200, res_headers)
