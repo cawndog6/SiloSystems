@@ -98,5 +98,7 @@ def upstreamHandler(request):
    requestData = request.get_json
    if requestData is not None:
       print(requestData)
+   else:
+      print("No data")
 
    return ('', 200, res_headers)
