@@ -1,9 +1,9 @@
 #Author(s): Connor Williams
-#Date: 1/27/2021
-#Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and return the available devices with their parameters in json format
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?<arguments>
-#input: site_id
-#output: returns status code 500 if the site cant be found or the user does not have authorization for the site. Returns 200 on success and the json data, which will look like:
+#Date: 3/21/2021
+#Purpose: Take in arguments from an HTTP request for site_id, and device_id as well as a json string in request.data that contains the data for all a device's parameters that it wants to put in the database. Parses that data and adds it to the database
+#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/upstreamHandler<arguments>
+#input: site_id, device_id
+#output: returns status code 500 on failure. Returns 200 on success.
 
 import sqlalchemy
 import pymysql
@@ -11,7 +11,7 @@ import json
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
-def getSiteDeviceInformation(request):
+def upstreamHandler(request):
    res_headers = {
       'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
       'Access-Control-Allow-Headers': 'Authorization'
