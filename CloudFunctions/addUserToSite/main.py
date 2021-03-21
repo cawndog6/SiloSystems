@@ -26,7 +26,7 @@ def addUserToSite(request):
    if req_headers and 'Authorization' in req_headers:
          id_token = req_headers['Authorization']
    else:
-      return ("No Authorization Header", 400, res_headers);
+      return ("No Authorization Header", 400, res_headers)
    PREFIX = 'Bearer '
    id_token = id_token[len(PREFIX):]
    try:

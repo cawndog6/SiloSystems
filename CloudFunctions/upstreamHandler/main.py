@@ -4,19 +4,7 @@
 #Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?<arguments>
 #input: site_id
 #output: returns status code 500 if the site cant be found or the user does not have authorization for the site. Returns 200 on success and the json data, which will look like:
-# {
-#  "devices": [
-#   {
-#     "device_id": 1, 
-#     "device_name": "biolabPi", 
-#     "parameters": [
-#        {
-#        "parameter_name": "temperature",
-#        "parameter_id": 1
-#         }
-#      ]
-#   }]
-# }
+
 import sqlalchemy
 import pymysql
 import json
@@ -49,6 +37,10 @@ def getSiteDeviceInformation(request):
        site_id = request_args['site_id']
    else: 
       return ('', 400, res_headers)
+   if request_args and 'device_id' in request_args:
+      device_id = request_args['device_id']
+   else:
+      return ('', 400, res_headers)
 
 
    #connect to the site-user_management database
@@ -80,11 +72,9 @@ def getSiteDeviceInformation(request):
       return('Error: Site does not exist or user does not have permission to view', 500, res_headers)
    r = result.fetchone()
    db_name = str(r[0])
-   print("db_name: '{}'".format(db_name))
    #connect to site's database
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
-   db_name = db_name
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
@@ -105,19 +95,8 @@ def getSiteDeviceInformation(request):
       )
    )
    connSiteDB = pool.connect()
-   deviceResults = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices;"))
-   #assemble json string
-   devices = {'devices': []}
-   for d in deviceResults:
-      device = dict(d)
-      device_id = device['device_id']
-      #get available parameters for device
-      paramResults = connSiteDB.execute(sqlalchemy.text("""SELECT parameters.parameter_name, parameters.parameter_id  FROM parameters INNER JOIN device_parameter 
-      ON device_parameter.parameter_id = parameters.parameter_id WHERE device_parameter.device_id = {};""".format(device_id)))
-      
-      device['parameters'] = [dict(p) for p in paramResults]
-      devices['devices'].append(device)
-   jsonData = json.dumps(devices)
-   print(jsonData)
-   return (jsonData, 200, res_headers)
-    
+   requestData = request.get_json
+   if requestData is not None:
+      print(requestData)
+
+   return ('', 200, res_headers)

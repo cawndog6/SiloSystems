@@ -21,7 +21,7 @@ def returnSQLresponse(request):
     if req_headers and 'Authorization' in req_headers:
         id_token = req_headers['Authorization']
     else:
-        return ("No Authorization Header", 400, res_headers);
+        return ("No Authorization Header", 400, res_headers)
     PREFIX = 'Bearer '
     id_token = id_token[len(PREFIX):]
     try:
@@ -79,25 +79,25 @@ def returnSQLresponse(request):
         results = conn.execute(sqlalchemy.text("SELECT * FROM {} WHERE deviceId = {};".format(sensor, deviceID)));
 
     #assemble JSON from results to be returned
-    numRows = len(results._saved_cursor._result.rows);
-    counter = 0;
-    headerProduced = 0;
+    numRows = len(results._saved_cursor._result.rows)
+    counter = 0
+    headerProduced = 0
     if numRows > 0:
 
         for r in results:
-            print("counter = {}".format(counter));
+            print("counter = {}".format(counter))
             if headerProduced == 0:
                 JSONresults = '{"deviceId":' + str(r[0]) + ',"deviceName":"' + str(r[1]) + '","sensorId":' + str(r[2]) + \
-                    ',"sensorName":"' + str(r[3]) + '","data":[';
-                headerProduced = 1;
+                    ',"sensorName":"' + str(r[3]) + '","data":['
+                headerProduced = 1
             if counter < (numRows - 1): 
-                JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '},';
-                counter = counter + 1;
+                JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '},'
+                counter = counter + 1
             else:
-                JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '}';
-                counter = counter + 1;
-        JSONresults += ']}';
-        return (JSONresults, 200, res_headers);
+                JSONresults += '{"date":"' + str(r[4]) + '","value":' + str(r[5]) + '}'
+                counter = counter + 1
+        JSONresults += ']}'
+        return (JSONresults, 200, res_headers)
     else: 
-        return ('', 204, res_headers);
+        return ('', 204, res_headers)
     #return JSONresults;
