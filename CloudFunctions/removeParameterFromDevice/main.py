@@ -101,7 +101,7 @@ def removeParameterFromDevice(request):
    )
    connSiteDB = pool.connect()
    #check if parameter already exists for the device its being added to
-   results = connSiteDB.execute(sqlalchemy.text("""SELECT * from device_parameter parameter_id = {} AND device_id = {};""".format(parameter_id, device_id)))
+   results = connSiteDB.execute(sqlalchemy.text("""SELECT * from device_parameter WHERE parameter_id = {} AND device_id = {};""".format(parameter_id, device_id)))
    if int(results.rowcount) == 0:
       return('Error: Parameter does not exists for this device', 500, res_headers)
    elif int(results.rowcount) == 1:
