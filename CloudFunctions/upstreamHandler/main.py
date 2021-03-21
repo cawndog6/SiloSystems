@@ -96,6 +96,7 @@ def upstreamHandler(request):
    )
    connSiteDB = pool.connect()
    requestData = request.get_json
+   requestData = json.dumps(requestData)
    if requestData is not None:
       print("json data:")
       print(requestData)
