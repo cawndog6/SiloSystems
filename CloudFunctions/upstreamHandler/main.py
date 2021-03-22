@@ -96,6 +96,6 @@ def upstreamHandler(request):
    )
    connSiteDB = pool.connect()
    requestData = request.json
-   for p in requestData['paramData']:
+   for p in requestData:
       connSiteDB.execute(sqlalchemy.text("INSERT INTO {} (date_time, device_id, reading) VALUES ('{}', {}, {});".format(str(p['parameter_name']), str(p['date_time']), int(device_id), int(p['readings'][0]))))
    return ('', 200, res_headers)
