@@ -119,9 +119,9 @@ def addParameterToDevice(request):
    results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
    if int(results.rowcount) == 0:
       connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
-   #add parameter to the device
-   results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
-   r = results.fetchone()
-   parameter_id = r[0]
-   connSiteDB.execute(sqlalchemy.text("INSERT INTO device_parameter(device_id, parameter_id) VALUES ({},{});".format(device_id, parameter_id)))
+      #add parameter to the device
+      results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
+      r = results.fetchone()
+      parameter_id = r[0]
+      connSiteDB.execute(sqlalchemy.text("INSERT INTO device_parameter(device_id, parameter_id) VALUES ({},{});".format(device_id, parameter_id)))
    return ('', 200, res_headers)
