@@ -118,6 +118,6 @@ def getSiteDeviceInformation(request):
       device['parameters'] = [dict(p) for p in paramResults]
       devices['devices'].append(device)
    jsonData = json.dumps(devices)
-   print(jsonData)
+
    return (jsonData, 200, res_headers)
     
