@@ -1,0 +1,28 @@
+#!/bin/bash
+cd src
+consolemenuStatus=$(pip3 list | grep console-menu)
+if [ -z "$consolemenuStatus" ]
+then
+    pip3 install console-menu
+else
+    echo $consolemenuStatus
+fi
+
+nodeStatus=$(node -v)
+if [ -z "$nodeStatus" ]
+then
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+    sudo apt install nodejs
+else 
+    echo node $nodeStatus
+fi
+
+firebaseStatus=$(npm list --depth=0 | grep firebase)
+if [ -z "firebaseStatus" ]
+then 
+    sudo npm install firebase
+else
+    echo $firebaseStatus
+fi
+
+cd ..
