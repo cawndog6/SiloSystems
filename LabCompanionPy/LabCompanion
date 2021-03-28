@@ -1,0 +1,22 @@
+#!/bin/bash
+consolemenuStatus=$(pip3 list | grep console-menu)
+if [ -z "$consolemenuStatus" ]
+then
+    pip3 install console-menu
+fi
+
+nodeStatus=$(node -v)
+if [ -z "$nodeStatus" ]
+then
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
+    sudo apt install nodejs
+fi
+
+firebaseStatus=$(npm list --prefix src/ --depth=0 | grep firebase)
+if [ -z "firebaseStatus" ]
+then 
+    sudo npm install --prefix src/ firebase
+fi
+cd src
+python3 LabCompanion.py
+cd ..

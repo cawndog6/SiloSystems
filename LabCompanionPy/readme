@@ -1,0 +1,17 @@
+Readme file for LabCompanion Raspberry Pi application
+
+REQUIREMENTS: 
+    python 3 (any python 3 version)
+    console-menu python module (installed automatically by application)
+    NodeJS (installed automatically by application)
+    Firebase NodeJS library (installed automatically by application)
+    
+INSTALL: 
+    This application requires any version of python 3. Make sure that "python3" is in your path and invokes the python 3 interpreter.
+    To install the required components, simply run the bash script called "LabCompanion" in the main directory. It will check if the 
+    component exists, and install it if it can't find it. 
+
+RUN:
+    Running works the same as installing. Just run the bash script called "LabCompanion" in the main directory. After making sure everything
+    is installed that the main program needs, it runs the main program.
+    
