@@ -15,6 +15,9 @@ async function ShowManage() {
 
     let siteList = document.getElementById("site-selector");
     let siteAddList = document.getElementById("site-selector-add");
+    let siteDeleteList = document.getElementById("site-selector-delete");
+    let userAddList = document.getElementById("site-selector-user-add");
+    let userRemoveList = document.getElementById("site-selector-user-remove");
     let deviceAddList = document.getElementById("device-selector-add");
     let deviceRemoveList = document.getElementById("device-selector-remove");
     let siteListIds = [];
@@ -23,12 +26,22 @@ async function ShowManage() {
     Array.from(siteList.children).forEach((child)=> {
         let addSite = siteAddList.appendChild(child.cloneNode(true));
         addSite.id = `add${child.id}`;
+        let deleteSite = siteDeleteList.appendChild(child.cloneNode(true));
+        deleteSite.id = `delete${child.id}`;
+
+        let userAddSite = userAddList.appendChild(child.cloneNode(true));
+        userAddSite.id = `useradd${child.id}`;
+        let userRemoveSite = userRemoveList.appendChild(child.cloneNode(true));
+        userRemoveSite.id = `userremove${child.id}`;
+
         siteListIds.push(child.id);
         siteListNames.push(child.innerText);
     });
 
-    siteAddList.children[0].remove();
-    siteAddList.disabled = false;
+    [siteAddList, siteDeleteList, userAddList, userRemoveList].forEach((list)=> {
+        list.children[0].remove();
+        list.disabled = false;
+    });
 
     let promises = [];
 
@@ -159,6 +172,23 @@ async function RemoveUserFromSite(event) {
     });
 }
 
+async function DeleteUserAccount(event) {
+    let form = event.target;
+
+    let confirmation = form.elements.confirmDelete.value;
+    if(confirmation != "YES") {
+        alert("Please enter YES to confirm you want to delete your account.");
+        return;
+    }
+
+    return await Get(`${apiRoot}/deleteUserAccount`, false).catch((err)=> {
+        Log(logLevel.ERROR, `Failed to delete user ${new_user_email}: ${err}`);
+        return -1;
+    }).then((response)=> {
+        return response;
+    });
+}
+
 //################# SITE MANAGEMENT #######################
 
 async function CreateNewSite(event) {
@@ -168,6 +198,29 @@ async function CreateNewSite(event) {
 
     return await Get(`${apiRoot}/createNewSite?${queryString}`, false).catch((err)=> {
         Log(logLevel.ERROR, `Failed to create site ${site_name}: ${err}`);
+        return -1;
+    }).then((response)=> {
+        return response;
+    });
+}
+
+async function DeleteSite(event) {
+    let form = event.target;
+
+    let confirmation = form.elements.confirmDelete.value;
+    if(confirmation != "YES") {
+        alert("Please enter YES to confirm you want to delete your account.");
+        return;
+    }
+
+    let selector = document.getElementById("site-selector-delete");
+
+    let site_id = encodeURIComponent(selector.options[selector.selectedIndex].id.split("_")[1]);
+
+    let queryString = `site_id=${site_id}`;
+
+    return await Get(`${apiRoot}/deleteSite?${queryString}`, false).catch((err)=> {
+        Log(logLevel.ERROR, `Failed to delete site ${site_id}: ${err}`);
         return -1;
     }).then((response)=> {
         return response;

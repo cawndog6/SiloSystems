@@ -2,10 +2,8 @@
 
 //################# INITIALIZATION ########################
 
-const level = {DEBUG: 0, WARNING: 1, ERROR: 2};
 let logLevel = level.DEBUG;
-
-let apiRoot = "https://us-west2-silo-systems-292622.cloudfunctions.net";
+let currentInterval = 0;
 
 //################# COMMON FUNCTIONS #####################
 
@@ -143,7 +141,7 @@ function DrawLineChart(dataTable, x_title, y_title, width, height, vAxis_fmt) {
                     'width':width,
                     'height':height,
                     'legend':{'position':'none'},
-                    'hAxis':{'format':'M/d/yy', 
+                    'hAxis':{'format':'M/d/yy h:m:s a', 
                         'minorGridlines':{'count':0}
                         },
                     'vAxis':{'format':vAxis_fmt},
@@ -289,10 +287,18 @@ async function GetSensorData(site_id, parameter_id, device_id, from_date) {
 
 async function ViewSensor(event) {
     ShowLoading();
+
+    clearInterval(currentInterval);
+
     let idParts = event.target.id.split("-");
 
     return await GetSensorData(currentSite.split("_")[1], idParts[2]).then((response)=> {
         DrawLineChart(response.data.map(row => [new Date(row.date_time), row.reading]), "Date", response.parameter_name, "100%", "400px", (response.parameter_name.indexOf("%") > -1 ? "percent" : "decimal"));
+        currentInterval = setInterval(()=>{
+            GetSensorData(currentSite.split("_")[1], idParts[2]).then((response)=> {
+                DrawLineChart(response.data.map(row => [new Date(row.date_time), row.reading]), "Date", response.parameter_name, "100%", "400px", (response.parameter_name.indexOf("%") > -1 ? "percent" : "decimal"));
+            });
+        }, 5000);
         UnshowLoading();
     });
 }

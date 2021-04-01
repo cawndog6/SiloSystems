@@ -31,6 +31,7 @@ header {
     top: 0px;
     background-color: #ccc;
     position: sticky;
+    position: -webkit-sticky;
     font-size: larger;
     font-weight: bolder;
 }

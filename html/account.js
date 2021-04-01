@@ -4,19 +4,8 @@
 
 let currentToken = undefined;
 let currentSite = undefined;
-const loginMessageLevel = {MESSAGE: 0, ERROR: 1, ERRORNOTRYAGAIN: 2}
 
 //initialize Firebase authentication
-const firebaseConfig = {
-    apiKey: "AIzaSyDjyljriWPsr2qCz_CDi1X0apNzpsVdxMc",
-    authDomain: "silo-systems-292622.firebaseapp.com",
-    databaseURL: "https://silo-systems-292622.firebaseio.com",
-    projectId: "silo-systems-292622",
-    storageBucket: "silo-systems-292622.appspot.com",
-    messagingSenderId: "664599356034",
-    appId: "1:664599356034:web:962f6119ebaaece13f8a9b"
-}; //This is from the Firebase Console in project settings
-
 firebase.initializeApp(firebaseConfig);
 //create auth reference
 const auth = firebase.auth();
@@ -209,6 +198,19 @@ function UnshowSignup() {
     }
 }
 
+async function CreateNewUser(user) {
+    let email = encodeURIComponent(user);
+
+    let queryString = `email=${email}`;
+
+    return await Get(`${apiRoot}/createNewUser?${queryString}`, false).catch((err)=> {
+        Log(logLevel.ERROR, `Failed to add user ${email} to user database: ${err}`);
+        return -1;
+    }).then((response)=> {
+        return response;
+    });
+}
+
 function Signup() {
     let form = document.getElementById("signup-form");
 
@@ -246,8 +248,10 @@ function Signup() {
         }
 
         Log(level.DEBUG, `Successful registration for user ${user}`);
-        
+
         SetUserCookies(user, token.user.ya, undefined, false);
+
+        CreateNewUser(user);    //add user to site database
 
         UpdateUserDisplay();
         UnshowLogin();

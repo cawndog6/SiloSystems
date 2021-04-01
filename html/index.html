@@ -2,25 +2,31 @@
 <html>
     <head>
         <title>Lab Companion Home</title>
+        <meta charset="utf-8">
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-app.js"></script>
         <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-auth.js"></script>
+        <script type="text/javascript" src="config.js"></script>
         <script type="text/javascript" src="main.js"></script>
         <script type="text/javascript" src="account.js"></script>
         <script type="text/javascript" src="manage.js"></script>
         <script type="text/javascript">
             function StartLoad() {
                 ShowLoading();
-                UpdateUserDisplay();
+                Promise.all([
+                    UpdateUserDisplay(),
+                    google.charts.load('current', {'packages':['corechart']})
+                ]);
+                
                 if(currentToken === undefined) {
                     UnshowLoading();
                     return;
                 }
-                Promise.all([
-                    LoadSiteList().then(LoadSensorTable),
-                    google.charts.load('current', {'packages':['corechart']})
-                ]).then(UnshowLoading);
+
+                LoadSiteList()
+                .then(LoadSensorTable)
+                .then(UnshowLoading);
             }
 
             window.addEventListener("load", StartLoad);
@@ -147,6 +153,16 @@
                             <input type="text" name="newSiteName" placeholder="New site name">
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <input type="submit" value="Submit">
+                        </form><br>
+                        Delete Site
+                        <form id="manage-delete-site" onsubmit="DeleteSite(event); return false;">
+                            <select id="site-selector-delete" disabled>
+                                <option>No sites found</option>
+                            </select>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="text" name="confirmDelete" placeholder="Type YES to delete">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
                         </form>
                     </section>
                     <section id="manage-users">
@@ -169,6 +185,12 @@
                             </select>
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <input type="email" name="deleteUserEmail" placeholder="User email to delete">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" value="Submit">
+                        </form><br>
+                        Delete My User account
+                        <form id="manage-delete-user" onsubmit="DeleteUserAccount(event); return false;">
+                            <input type="text" name="confirmDelete" placeholder="Type YES to delete">
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <input type="submit" value="Submit">
                         </form>
