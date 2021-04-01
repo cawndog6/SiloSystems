@@ -58,10 +58,10 @@ async function Get(url, isJson) {
     }
 
     let init;
-    if(currentToken === undefined || url.substring(0,apiRoot.length) != apiRoot) {    //don't send auth header to outside requests
+    if(auth.currentUser === null || url.substring(0,apiRoot.length) != apiRoot) {    //don't send auth header to outside requests
         init = {};
     } else {
-        init = {'headers': new Headers({'Authorization': `Bearer ${currentToken}`})};
+        init = {'headers': new Headers({'Authorization': `Bearer ${auth.currentUser.getIdToken(true)}`})};
     }
 
     let response = await fetch(url, init);
@@ -85,10 +85,10 @@ async function Post(url, body, isJson) {
     }
 
     let init;
-    if(currentToken === undefined || url.substring(0,apiRoot.length-1) != apiRoot) {    //don't send auth header to outside requests
-        init = {"headers": new Headers({"Authorization": `Bearer ${currentToken}`}), "method": "POST", "body": body} 
-    } else {
+    if(auth.currentUser === null || url.substring(0,apiRoot.length-1) != apiRoot) {    //don't send auth header to outside requests
         init = {"method": "POST", "body": body}
+    } else {
+        init = {"headers": new Headers({"Authorization": `Bearer ${auth.currentUser.getIdToken(true)}`}), "method": "POST", "body": body} 
     }
     let response = await fetch(url, init);
     
@@ -152,6 +152,15 @@ function DrawLineChart(dataTable, x_title, y_title, width, height, vAxis_fmt) {
     chart.draw(data, options);
 }
 
+function SetSiteCookie(site) {
+    let todayPlus30 = new Date();
+    todayPlus30.setDate(today.getDate()+30);
+
+    if(site !== undefined) {
+        document.cookie = `site=${site}; expires=${todayPlus30}`;
+    }
+}
+
 //################# DATA FUNCTIONS ########################
 
 async function LoadSiteList() {
@@ -182,7 +191,7 @@ async function LoadSiteList() {
         }
         else {
             currentSite = siteList.children[0].id;
-            SetUserCookies(undefined, undefined, currentSite, true);
+            SetSiteCookie(currentSite);
         }
         
         siteList.selectedIndex = Array.from(siteList.children).map((child)=>child.id).indexOf(currentSite);
@@ -197,7 +206,7 @@ function ChangeSite(event) {
     ShowLoading();
     let newSite = event.target.options[event.target.selectedIndex].id;
     currentSite = newSite;
-    SetUserCookies(undefined, undefined, newSite, true);
+    SetSiteCookie(newSite);
     LoadSensorTable().then(UnshowLoading);
 }
 

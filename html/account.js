@@ -2,7 +2,7 @@
 
 //################# INITIALIZATION ########################
 
-let currentToken = undefined;
+// let currentToken = undefined;
 let currentSite = undefined;
 
 //initialize Firebase authentication
@@ -12,42 +12,17 @@ const auth = firebase.auth();
 
 //################# COMMON FUNCTIONS ######################
 
-function SetUserCookies(user, token, site, remember) {
-    let today = new Date();
-    let todayPlus30 = new Date();
-    todayPlus30.setDate(today.getDate()+30);
-    let expireString = "";
-    if(remember) {
-        expireString = `; expires=${todayPlus30}`;
-    }
-
-    if(token !== undefined) {
-        document.cookie = `token=${token}${expireString}`;
-        currentToken = token;
-    }
-
-    if(user !== undefined) {
-        document.cookie = `user=${user}${expireString}`;
-    }
-    
-    if(site !== undefined) {
-        document.cookie = `site=${site}${expireString}`;
-    }
-}
-
 function UpdateUserDisplay() {
     let userDisplay = document.getElementById("current-user");
     let loginLink = document.getElementById("show-login-link");
     let loggedInLinks = document.getElementById("logged-in-links");
 
-    if(document.cookie.indexOf("user=") == -1) {
+    if(auth.currentUser === null) {
         userDisplay.innerText = "You are not logged in. ";
         loginLink.classList.remove("hidden");
         loggedInLinks.classList.add("hidden");
     } else {
-        currentToken = document.cookie.split("token=")[1].split(";")[0];
-        let user = document.cookie.split("user=")[1].split(";")[0];
-        userDisplay.innerHTML = `Currently logged in as <strong>${user}</strong>`;
+        userDisplay.innerHTML = `Currently logged in as <strong>${auth.currentUser.email}</strong>`;
         loginLink.classList.add("hidden");
         loggedInLinks.classList.remove("hidden");
     }
@@ -116,19 +91,40 @@ function Login() {
 
     UnshowLoginMessage();
 
-    auth.signInWithEmailAndPassword(user, password).catch(()=> {
+    auth.signInWithEmailAndPassword(user, password).catch((err)=> {
         Log(level.WARNING, `Invalid login attempt for user ${user}`);
-        ShowLoginMessage("Either your username or password was incorrect.", loginMessageLevel.ERROR);
+        switch(err.code) {
+            case "auth/invalid-email":
+                ShowLoginMessage("Your username seems to be invalid.", loginMessageLevel.ERROR);
+                break;
+            case "auth/user-disabled":
+                ShowLoginMessage("Your account has been disabled. Please contact your administrator.", loginMessageLevel.ERRORNOTRYAGAIN);
+                break;
+            case "auth/user-not-found":
+                ShowLoginMessage("Your username was not found in the system.", loginMessageLevel.ERROR);
+                break;
+            case "auth/wrong-password":
+                ShowLoginMessage("Either your username or password was incorrect.", loginMessageLevel.ERROR);
+                break;
+            default:
+                ShowLoginMessage(err.message, loginMessageLevel.ERROR);
+                break;
+        }
     }).then((token)=> {
         if(token === undefined) {
             return;
         }
-        console.log(token)
+
         Log(level.DEBUG, `Successful ${(remember) ? "persistent":"session"} login for user ${user}`);
 
         ShowLoading();
 
-        SetUserCookies(user, token.user.ya, undefined, remember);
+        if(remember) {
+            auth.setPersistence("local");
+        }
+        else {
+            auth.setPersistence("session");
+        }
 
         UpdateUserDisplay();
         LoadSiteList().then(LoadSensorTable);
@@ -140,8 +136,6 @@ function Login() {
 
 function Logout() {
     auth.signOut().then(()=> {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        document.cookie = "user=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         window.location.reload();
     });
 }
@@ -228,17 +222,19 @@ function Signup() {
     auth.createUserWithEmailAndPassword(user, password).catch((err)=> {
         Log(level.WARNING, `Signup failed with a ${err.code} error`);
 
-        if(typeof err == "string") {
-            err = JSON.parse(err.message);
-            if(err.error.message.substring(err.error.message.length-1) == ".") {
-                ShowLoginMessage(`Error: ${err.error.message}`, loginMessageLevel.ERROR);
-            }
-            else {
-                ShowLoginMessage(`Error: ${err.error.message}.`, loginMessageLevel.ERROR);
-            }
-        }
-        else {
-            ShowLoginMessage(`Error: ${err.message}`, loginMessageLevel.ERROR);
+        switch(err.code) {
+            case "auth/email-already-in-use":
+                ShowLoginMessage("An account associated with that username already exists. Please choose a different username or try logging in instead.", loginMessageLevel.ERRORNOTRYAGAIN);
+                break;
+            case "auth/invalid-email":
+                ShowLoginMessage("Your username seems to be invalid.", loginMessageLevel.ERROR);
+                break;
+            case "auth/weak-password":
+                ShowLoginMessage("Your password needs to be stronger. Add more complex characters and avoid simple phrases.", loginMessageLevel.ERROR);
+                break;
+            default:
+                ShowLoginMessage(err.message, loginMessageLevel.ERROR);
+                break;
         }
 
         return undefined;
@@ -249,7 +245,7 @@ function Signup() {
 
         Log(level.DEBUG, `Successful registration for user ${user}`);
 
-        SetUserCookies(user, token.user.ya, undefined, false);
+        auth.setPersistence("session");
 
         CreateNewUser(user);    //add user to site database
 
@@ -272,14 +268,19 @@ function RequestPasswordReset() {
         return;
     }
 
-    auth.sendPasswordResetEmail(user).catch((err)=> {
+    auth.sendPasswordResetEmail(user, null).catch((err)=> {
         Log(level.WARNING, `Reset request failed with a ${err.code} error`);
 
-        if(err.message.substring(err.message.length-1) == ".") {
-            ShowLoginMessage(`Error: ${err.message}`, loginMessageLevel.ERROR);
-        }
-        else {
-            ShowLoginMessage(`Error: ${err.message}.`, loginMessageLevel.ERROR);
+        switch(err.code) {
+            case "auth/invalid-email":
+                ShowLoginMessage("Your username seems to be invalid.", loginMessageLevel.ERROR);
+                break;
+            case "auth/user-not-found":
+                ShowLoginMessage("Your username was not found in the system.", loginMessageLevel.ERROR);
+                break;
+            default:
+                ShowLoginMessage(err.message, loginMessageLevel.ERROR);
+                break;
         }
 
         return -1;
@@ -313,11 +314,25 @@ function ConfirmPasswordReset() {
     auth.confirmPasswordReset(code, password).catch((err)=> {
         Log(level.WARNING, `Reset confirmation failed with a ${err.code} error`);
 
-        if(err.message.substring(err.message.length-1) == ".") {
-            ShowLoginMessage(`Error: ${err.error.message}`, loginMessageLevel.ERROR);
-        }
-        else {
-            ShowLoginMessage(`Error: ${err.error.message}.`, loginMessageLevel.ERROR);
+        switch(err.code) {
+            case "auth/expired-action-code":
+                ShowLoginMessage("Your password reset code has expired. Please start the password reset process again.", loginMessageLevel.ERRORNOTRYAGAIN);
+                break;
+            case "auth/invalid-action-code":
+                ShowLoginMessage("Your password reset code is incorrect.", loginMessageLevel.ERROR);
+                break;
+            case "auth/user-disabled":
+                ShowLoginMessage("Your account has been disabled. Please contact your administrator.", loginMessageLevel.ERRORNOTRYAGAIN);
+                break;
+            case "auth/user-not-found":
+                ShowLoginMessage("Your username was not found in the system. Please start the password reset process again.", loginMessageLevel.ERRORNOTRYAGAIN);
+                break;
+            case "auth/weak-password":
+                ShowLoginMessage("Your password needs to be stronger. Add more complex characters and avoid simple phrases.", loginMessageLevel.ERROR);
+                break;
+            default:
+                ShowLoginMessage(err.message, loginMessageLevel.ERROR);
+                break;
         }
 
         return -1;
