@@ -1,39 +1,24 @@
 #Author(s): Connor Williams
-#Date: 1/27/2021
-#Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and return the available devices with their parameters in json format
-#Trigger: https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?<arguments>
-#input: site_id
-#output: returns status code 500 if the site cant be found or the user does not have authorization for the site. Returns 200 on success and the json data, which will look like:
-# {
-#  "devices": [
-#   {
-#     "device_id": 1, 
-#     "device_name": "biolabPi", 
-#     "parameters": [
-#        {
-#        "parameter_name": "temperature",
-#        "parameter_id": 1
-#         }
-#      ]
-#   }]
-# }
+#Date: 3/28/2021
+#Purpose: Take in arguments from an HTTP request for site_id, device_id, and trigger_id, and run sql queries to add the the trigger to a raspberry pi device
+#Trigger: <arguments>
+#input: site_id, device_id, and trigger_id
+#output: returns status code 500 on failure or 200 on success
 import sqlalchemy
 import pymysql
-import json
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
-def getSiteDeviceInformation(request):
+def addParameterToDevice(request):
    res_headers = {
       'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
       'Access-Control-Allow-Headers': 'Authorization'
    }
    if request.method =='OPTIONS':
       return ("", 204, res_headers)
-   #get arguments to http request
    req_headers = request.headers
    if req_headers and 'Authorization' in req_headers:
-      id_token = req_headers['Authorization']
+         id_token = req_headers['Authorization']
    else:
       return ("No Authorization Header", 400, res_headers)
    PREFIX = 'Bearer '
@@ -43,13 +28,20 @@ def getSiteDeviceInformation(request):
       uid = decoded_token['uid']
    except Exception as e:
       return ("Error: {}".format(e), 500, res_headers)
-
+   #get arguments to http request
    request_args = request.args
    if request_args and 'site_id' in request_args:
-       site_id = request_args['site_id']
+      site_id = request_args['site_id']
    else: 
       return ('', 400, res_headers)
-
+   if request_args and 'device_id' in request_args:
+      device_id = request_args['device_id']
+   else: 
+      return ('', 400, res_headers)
+   if request_args and 'trigger_id' in request_args:
+      trigger_id = request_args['trigger_id']
+   else: 
+      return ('', 400, res_headers)
 
    #connect to the site-user_management database
    db_user = "root"
@@ -75,16 +67,18 @@ def getSiteDeviceInformation(request):
    connSiteUserManagement = pool.connect()
    #execute sql statements
    #get site's db name & make sure the user is listed as an owner
-   result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {};".format(uid, site_id)))
+   result = connSiteUserManagement.execute(sqlalchemy.text("""SELECT db_name FROM site_user_role INNER JOIN site ON 
+      site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {} 
+      AND site_user_role.role_id = 0;""".format(uid, site_id)))
    if int(result.rowcount) == 0:
-      return('Error: Site does not exist or user does not have permission to view', 500, res_headers)
+      print("Error: Site does not exist or user does not have ownership permissions")
+      return('Error: Site does not exist or user does not have ownership permissions', 500, res_headers)
    r = result.fetchone()
    db_name = str(r[0])
-   print("db_name: '{}'".format(db_name))
    #connect to site's database
    db_user = "root"
    db_pass = "FbtNb8rkjArEwApg"
-   db_name = db_name
+   db_name = "{}".format(db_name)
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
 
@@ -105,22 +99,15 @@ def getSiteDeviceInformation(request):
       )
    )
    connSiteDB = pool.connect()
-   deviceResults = connSiteDB.execute(sqlalchemy.text("SELECT * FROM devices;"))
-   #assemble json string
-   devices = {'devices': []}
-   for d in deviceResults:
-      device = dict(d)
-      device_id = device['device_id']
-      #get available parameters for device
-      paramResults = connSiteDB.execute(sqlalchemy.text("""SELECT parameters.parameter_name, parameters.parameter_id  FROM parameters INNER JOIN device_parameter 
-      ON device_parameter.parameter_id = parameters.parameter_id WHERE device_parameter.device_id = {};""".format(device_id)))
-      triggerResults = connSiteDB.execute(sqlalchemy.text("""SELECT triggers.trigger_name, triggers.trigger_id, triggers.trigger_type, action, parameter_id, reading_value, relation_to_reading FROM triggers INNER JOIN device_trigger ON triggers.trigger_id = device_trigger.trigger_id WHERE device_trigger.device_id = {};""".format(int(device_id))))
-      device['parameters'] = [dict(p) for p in paramResults]
-      device['triggers'] = [dict(t) for t in triggerResults]
-      devices['devices'].append(device)
-   availableTriggers = connSiteDB.execute(sqlalchemy.text("SELECT trigger_name, trigger_id, trigger_type, action, parameter_id, reading_value, relation_to_reading FROM triggers "))
-   devices['availableTriggers'] = [dict(t) for t in availableTriggers]
-   jsonData = json.dumps(devices)
-
-   return (jsonData, 200, res_headers)
-    
+   result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_name from triggers WHERE trigger_name = '{}';".format(trigger_id)))
+   if int(result.rowcount) == 0:
+      return ('Trigger does not exist', 500, res_headers)
+   r = result.fetchone()
+   trigger_name = str(r[0])
+   #check if trigger already exists for the device its being added to
+   results = connSiteDB.execute(sqlalchemy.text("""SELECT * from device_trigger WHERE device_id = {} AND trigger_id = {};""".format(device_id, trigger_id)))
+   if int(results.rowcount) != 0:
+      return('Error: Parameter already exists for this device', 500, res_headers)
+   else:
+      connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger (device_id, trigger_id) VALUES {}, {};".format(int(device_id), int(trigger_id))))
+   return ('', 200, res_headers)

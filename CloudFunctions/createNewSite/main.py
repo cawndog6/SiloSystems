@@ -111,5 +111,7 @@ def createNewSite(request):
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `devices`(`device_id` INT NOT NULL AUTO_INCREMENT, `device_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`device_id`, `device_name`)) AUTO_INCREMENT=1001;"))
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `parameters`(`parameter_id` INT NOT NULL AUTO_INCREMENT, `parameter_name` VARCHAR(25) NOT NULL, PRIMARY KEY(`parameter_id`, `parameter_name`)) AUTO_INCREMENT=1001;"))
    connSiteDB.execute(sqlalchemy.text("CREATE TABLE `device_parameter`(`device_id` INT NOT NULL, `device_name` VARCHAR(25) NOT NULL);"))
+   connSiteDB.execute(sqlalchemy.text("CREATE TABLE `triggers` (`trigger_id` INT NOT NULL AUTO_INCREMENT,`trigger_name` VARCHAR(25) NOT NULL,`trigger_type` VARCHAR(25) NOT NULL,`action` VARCHAR(45) NULL,`parameter_id` INT NULL,`reading_value` INT NULL,`relation_to_reading` VARCHAR(15) NULL,PRIMARY KEY (`trigger_id`, `trigger_name`));"))
+   connSiteDB.execute(sqlalchemy.text("CREATE TABLE `device_trigger`(`trigger_id` INT NOT NULL, `device_id` INT NOT NULL, PRIMARY KEY(`trigger_id`, `device_id`))"))
    return ('', 200, res_headers)
         
