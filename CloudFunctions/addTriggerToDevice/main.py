@@ -9,7 +9,7 @@ import pymysql
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
-def addParameterToDevice(request):
+def addTriggerToDevice(request):
    res_headers = {
       'Access-Control-Allow-Origin': 'https://storage.googleapis.com',
       'Access-Control-Allow-Headers': 'Authorization'
