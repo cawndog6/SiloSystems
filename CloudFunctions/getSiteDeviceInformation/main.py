@@ -32,7 +32,6 @@
 #      "relation_to_reading": ">"
 #  }]
 # }
-trigger_name, trigger_id, trigger_type, action, parameter_id, reading_value, relation_to_reading
 import sqlalchemy
 import pymysql
 import json
