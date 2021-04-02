@@ -99,7 +99,7 @@ def addTriggerToDevice(request):
       )
    )
    connSiteDB = pool.connect()
-   result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_name from triggers WHERE trigger_name = '{}';".format(trigger_id)))
+   result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_name from triggers WHERE trigger_id = '{}';".format(trigger_id)))
    if int(result.rowcount) == 0:
       return ('Trigger does not exist', 500, res_headers)
    r = result.fetchone()
@@ -107,7 +107,7 @@ def addTriggerToDevice(request):
    #check if trigger already exists for the device its being added to
    results = connSiteDB.execute(sqlalchemy.text("""SELECT * from device_trigger WHERE device_id = {} AND trigger_id = {};""".format(device_id, trigger_id)))
    if int(results.rowcount) != 0:
-      return('Error: Parameter already exists for this device', 500, res_headers)
+      return('Error: Trigger already exists for this device', 500, res_headers)
    else:
       connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger (device_id, trigger_id) VALUES {}, {};".format(int(device_id), int(trigger_id))))
    return ('', 200, res_headers)
