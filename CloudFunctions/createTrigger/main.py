@@ -138,6 +138,6 @@ def createTrigger(request):
       if int(result.rowcount) != 0:
          trigger_id = int(r[0])
          print(trigger_id)
-         connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger(device_id, trigger_id) values ({}, {});".format(int(device_id), trigger_id))
+         connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger(device_id, trigger_id) values ({}, {});".format(int(device_id), trigger_id)))
    return ('', 200, res_headers)
     
