@@ -133,7 +133,7 @@ def createTrigger(request):
    result = connSiteDB.execute(sqlalchemy.text("INSERT INTO `triggers` (trigger_name, trigger_type, action, parameter_id, reading_value, relation_to_reading) VALUES ('{}', '{}', '{}', {}, {}, '{}');".format(trigger_name, trigger_type, action, int(parameter_id), int(reading_value), relation_to_reading)))
    add_to_device = add_to_device.lower()
    if add_to_device == "true":
-      result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_id FROM triggers where trigger_name = '{}'".format(trigger_name)))
+      result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_id FROM triggers where trigger_name = '{}'".format(str(trigger_name))))
       r = result.fetchone()
       trigger_id = str(r[0])
       connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger(device_id, trigger_id) values ({}, {});".format(int(device_id), int(trigger_id))))
