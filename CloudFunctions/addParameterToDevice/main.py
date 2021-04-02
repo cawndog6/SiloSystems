@@ -132,5 +132,5 @@ def addParameterToDevice(request):
       parameter_id = r[0]
       connSiteDB.execute(sqlalchemy.text("INSERT INTO device_parameter(device_id, parameter_id) VALUES ({},{});".format(device_id, parameter_id)))
    else:
-      return ('Could not get parameter_id', 500, res_headers)
+      return ('Could not get parameter_id for parameter_name: {}'.format(parameter_name), 500, res_headers)
    return ('', 200, res_headers)
