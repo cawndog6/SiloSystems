@@ -135,7 +135,7 @@ def createTrigger(request):
    if add_to_device == "true":
       result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_id FROM triggers where trigger_name = '{}'".format(trigger_name)))
       r = result.fetchone()
-      trigger_id = int(r[0])
+      trigger_id = str(r[0])
       connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger(device_id, trigger_id) values ({}, {});".format(int(device_id), int(trigger_id))))
    return ('', 200, res_headers)
     
