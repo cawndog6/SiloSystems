@@ -2,7 +2,10 @@
 #Date: 1/21/2021
 #Purpose: Take in arguments from an HTTP request for uid, site_id, and device_name and run sql queries to add the the device to the site's database
 #Trigger: dearguments>
-#input: site_id, device_id, uid, parameter_name, data_val, data_type
+#input: site_id, device_id, parameter_name, data_type(optional), parameter_exists(optional)
+#input description: data_type is the MySQL datatype that is being recorded. This may be an Integer, varchar(n), etc. This function needs the arguments site_id, device_id, and parameter_name. 
+#If the parameter already exists and you're just adding it to another device, set parameter_exists to "true". You can see what parameters already exist by looking at "availableParameters" in the JSON returned from getSiteDeviceInformation.
+#if parameter_exists is set to false or the argument isn't present, it will assumed to be false. In that case, the data_type argument is required.
 #output: returns status code 500 if server cannot create new site or 200 on success
 import sqlalchemy
 import pymysql
@@ -40,16 +43,18 @@ def addParameterToDevice(request):
       return ('', 400, res_headers)
    if request_args and 'parameter_name' in request_args:
       parameter_name = request_args['parameter_name']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'data_val' in request_args:
-      data_val = request_args['data_val']
-   else: 
-      return ('', 400, res_headers)
-   if request_args and 'data_type' in request_args:
-      data_type = request_args['data_type']
-   else: 
-      return ('', 400, res_headers)
+   if request_args and 'parameter_exists' in request_args:
+      parameter_exists = request_args['parameter_exists']
+      parameter_exists = parameter_exists.lower()
+   else:
+      parameter_exists = "false"
+   if parameter_exists == "false":
+      if request_args and 'data_type' in request_args:
+         data_type = request_args['data_type']
+      else:
+         return ('', 400, res_headers)
+   
+   
 
    #connect to the site-user_management database
    db_user = "root"
@@ -113,14 +118,16 @@ def addParameterToDevice(request):
       device_parameter.device_id = {};""".format(parameter_name, device_id)))
    if int(results.rowcount) != 0:
       return('Error: Parameter already exists for this device', 500, res_headers)
-   #create table for parameter if it doesnt already exist
-   connSiteDB.execute(sqlalchemy.text("""CREATE TABLE IF NOT EXISTS {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, 
-      {} {}, PRIMARY KEY(date_time));""".format(parameter_name, data_val, data_type)))
+   # Create new table for paramter if it does not already exist
+   if parameter_exists == "false":
+      results = connSiteDB.execute(sqlalchemy.text("""SELECT * from parameters WHERE parameter_name = '{}' = {};""".format(parameter_name)))
+      if int(results.rowcount) == 0:
+         connSiteDB.execute(sqlalchemy.text("""CREATE TABLE {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, 
+            reading {}, PRIMARY KEY(date_time));""".format(parameter_name, data_type)))
+         connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
    results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
    if int(results.rowcount) == 0:
-      connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
       #add parameter to the device
-      results = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id from parameters where parameter_name = '{}';".format(parameter_name)))
       r = results.fetchone()
       parameter_id = r[0]
       connSiteDB.execute(sqlalchemy.text("INSERT INTO device_parameter(device_id, parameter_id) VALUES ({},{});".format(device_id, parameter_id)))

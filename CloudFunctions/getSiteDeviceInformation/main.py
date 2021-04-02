@@ -6,7 +6,7 @@
 #output: returns status code 500 if the site cant be found or the user does not have authorization for the site. Returns 200 on success and the json data, which will look like:
 # {
 #  "devices": [
-#   {
+#  {
 #     "device_id": 1, 
 #     "device_name": "biolabPi", 
 #     "parameters": [
@@ -15,7 +15,17 @@
 #        "parameter_id": 1
 #         }
 #      ]
-#   }]
+#     "triggers": [
+#     {
+#        "trigger_name": "tempover90",
+#        "trigger_id": 5,
+#        "trigger_type": "function",
+#        "action": "tempover90",
+#        "parameter_id": 60,
+#        "reading_value": 90,
+#        "relation_to_reading": ">"
+#     }]
+# }]
 #  "availableParameters": [
 #    {
 #     "parameter_id": 15,
