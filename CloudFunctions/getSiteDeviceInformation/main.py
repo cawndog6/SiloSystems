@@ -16,7 +16,23 @@
 #         }
 #      ]
 #   }]
+#  "availableParameters": [
+#    {
+#     "parameter_id": 15,
+#     "parameter_name": "temperature"
+#    }]
+#  "availableTriggers": [
+#   {
+#      "trigger_name": "tempover90",
+#      "trigger_id": 5,
+#      "trigger_type": "function",
+#      "action": "tempover90",
+#      "parameter_id": 60,
+#      "reading_value": 90,
+#      "relation_to_reading": ">"
+#  }]
 # }
+trigger_name, trigger_id, trigger_type, action, parameter_id, reading_value, relation_to_reading
 import sqlalchemy
 import pymysql
 import json
@@ -118,6 +134,8 @@ def getSiteDeviceInformation(request):
       device['parameters'] = [dict(p) for p in paramResults]
       device['triggers'] = [dict(t) for t in triggerResults]
       devices['devices'].append(device)
+   availableParameters = connSiteDB.execute(sqlalchemy.text("SELECT parameter_id, parameter_name FROM parameters "))
+   devices['availableParameters'] = [dict(p) for p in availableParameters]
    availableTriggers = connSiteDB.execute(sqlalchemy.text("SELECT trigger_name, trigger_id, trigger_type, action, parameter_id, reading_value, relation_to_reading FROM triggers "))
    devices['availableTriggers'] = [dict(t) for t in availableTriggers]
    jsonData = json.dumps(devices)
