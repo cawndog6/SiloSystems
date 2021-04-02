@@ -109,5 +109,5 @@ def addTriggerToDevice(request):
    if int(results.rowcount) != 0:
       return('Error: Trigger already exists for this device', 500, res_headers)
    else:
-      connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger (device_id, trigger_id) VALUES {}, {};".format(int(device_id), int(trigger_id))))
+      connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger (device_id, trigger_id) VALUES ({}, {});".format(int(device_id), int(trigger_id))))
    return ('', 200, res_headers)
