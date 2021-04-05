@@ -121,7 +121,7 @@ def addParameterToDevice(request):
    # Create new table for paramter if it does not already exist
    if parameter_exists == "false":
       results = connSiteDB.execute(sqlalchemy.text("""SELECT * from parameters WHERE parameter_name = '{}';""".format(parameter_name)))
-      if int(results.rowcount) == 0:
+      if int(results.rowcount) != 0:
          connSiteDB.execute(sqlalchemy.text("""CREATE TABLE {}(date_time DATETIME NOT NULL, device_id INT NOT NULL, 
             reading {}, PRIMARY KEY(date_time));""".format(parameter_name, data_type)))
          connSiteDB.execute(sqlalchemy.text("INSERT INTO parameters(parameter_name) VALUES ('{}');".format(parameter_name)))
