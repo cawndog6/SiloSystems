@@ -34,10 +34,6 @@ def deleteTrigger(request):
       site_id = request_args['site_id']
    else: 
       return ('', 400, res_headers)
-   if request_args and 'device_id' in request_args:
-      device_id = request_args['device_id']
-   else: 
-      return ('', 400, res_headers)
    if request_args and 'trigger_id' in request_args:
       trigger_id = request_args['trigger_id']
    else: 

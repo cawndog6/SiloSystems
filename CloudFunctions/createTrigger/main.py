@@ -64,7 +64,7 @@ def createTrigger(request):
    if request_args and 'add_to_device' in request_args:
       add_to_device = request_args['add_to_device']
       if 'device_id' in request_args:
-         device_id = request_args
+         device_id = request_args['device_id']
       else:
          return ('', 400, res_headers)
    else:
@@ -131,10 +131,13 @@ def createTrigger(request):
 
    connSiteDB = pool.connect()
    result = connSiteDB.execute(sqlalchemy.text("INSERT INTO `triggers` (trigger_name, trigger_type, action, parameter_id, reading_value, relation_to_reading) VALUES ('{}', '{}', '{}', {}, {}, '{}');".format(trigger_name, trigger_type, action, int(parameter_id), int(reading_value), relation_to_reading)))
-   if add_to_device == True:
-      result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_id FROM triggers where trigger_name = '{}'".format(trigger_name)))
+   add_to_device = add_to_device.lower()
+   if add_to_device == "true":
+      result = connSiteDB.execute(sqlalchemy.text("SELECT trigger_id FROM triggers where trigger_name = '{}'".format(str(trigger_name))))
       r = result.fetchone()
-      trigger_id = r[0]
-      connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger(device_id, trigger_id) values ({}, {});".format(int(device_id), int(trigger_id))))
+      if int(result.rowcount) != 0:
+         trigger_id = int(r[0])
+         print(trigger_id)
+         connSiteDB.execute(sqlalchemy.text("INSERT INTO device_trigger(device_id, trigger_id) values ({}, {});".format(int(device_id), trigger_id)))
    return ('', 200, res_headers)
     
