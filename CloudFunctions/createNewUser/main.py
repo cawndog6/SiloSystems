@@ -30,8 +30,8 @@ def createNewUser(request):
    except Exception as e:
       return ("Error: {}".format(e), 500, res_headers)
 
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
+   db_user = os.environ.get('db_user')
+   db_pass = os.environ.get('db_pass')
    db_name = "site-user_management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
@@ -42,8 +42,8 @@ def createNewUser(request):
       email = request_args['email']
    else: 
       return ('', 400, res_headers)
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
+   db_user = os.environ.get('db_user')
+   db_pass = os.environ.get('db_pass')
    db_name = "site-user_management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"

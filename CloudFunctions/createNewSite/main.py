@@ -28,8 +28,8 @@ def createNewSite(request):
       uid = decoded_token['uid']
    except Exception as e:
       return ("Error: {}".format(e), 500, res_headers)
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
+   db_user = os.environ.get('db_user')
+   db_pass = os.environ.get('db_pass')
    db_name = "site-user_management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
@@ -84,8 +84,8 @@ def createNewSite(request):
          conn.execute(sqlalchemy.text("INSERT INTO site_user_role VALUES ({}, '{}', {});".format(int(site_id), uid, role_id)))
          conn.execute("CREATE DATABASE {};".format(db_name))
       #connect to site's database
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
+   db_user = os.environ.get('db_user')
+   db_pass = os.environ.get('db_pass')
    db_name = db_name
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
