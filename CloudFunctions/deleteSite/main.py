@@ -40,8 +40,8 @@ def deleteSite(request):
 
 
    #connect to the site-user_management database
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
+   db_user = os.environ.get('db_user')
+   db_pass = os.environ.get('db_pass')
    db_name = "site-user_management"
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
@@ -70,8 +70,8 @@ def deleteSite(request):
    db_name = str(r[0])
    print("db_name: '{}'".format(db_name))
    #connect to site's database
-   db_user = "root"
-   db_pass = "FbtNb8rkjArEwApg"
+   db_user = os.environ.get('db_user')
+   db_pass = os.environ.get('db_pass')
    db_name = db_name
    db_socket_dir = "/cloudsql"
    cloud_sql_connection_name = "silo-systems-292622:us-west1:test-instance"
