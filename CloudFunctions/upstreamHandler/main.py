@@ -66,7 +66,7 @@ def upstreamHandler(request):
    )
    connSiteUserManagement = pool.connect()
    #execute sql statements
-   #get site's db name & make sure the user is listed as an owner
+   #get site's db name & make sure the user is a member of the site
    result = connSiteUserManagement.execute(sqlalchemy.text("SELECT db_name FROM site_user_role INNER JOIN site ON site_user_role.site_id = site.site_id where site_user_role.uid = '{}' AND site_user_role.site_id = {};".format(uid, site_id)))
    if int(result.rowcount) == 0:
       return('Error: Site does not exist or user does not have permission to view', 500, res_headers)
