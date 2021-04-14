@@ -10,6 +10,7 @@
 import sqlalchemy
 import pymysql
 import firebase_admin
+import os
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
 def addParameterToDevice(request):
