@@ -317,6 +317,13 @@ async function LoadSensorTable() {
                 downloadLink.appendChild(document.createTextNode("Download Data"));
                 downloadCell.appendChild(downloadLink);
 
+                let streamCell = row.insertCell();
+                let streamLink = document.createElement("a");
+                streamLink.href = "http://35.212.218.138/EXPO-STREAM.html"; //TODO this is a generic link - should be made specific to this device's stream
+                streamLink.target = "_blank";
+                streamLink.appendChild(document.createTextNode("View Stream"));
+                streamCell.appendChild(streamLink);
+
                 device.triggers.forEach((trigger)=>{
                     if(parameter.parameter_id == trigger.parameter_id) {
                         currentTriggers.appendChild(document.createTextNode(`When ${device.device_name} ${parameter.parameter_name} ${trigger.relation_to_reading} ${trigger.reading_value},\nsend an email. (`));
