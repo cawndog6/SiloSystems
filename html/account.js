@@ -2,17 +2,18 @@
 
 //################# INITIALIZATION ########################
 
-// let currentToken = undefined;
 let currentSite = undefined;
 
 //initialize Firebase authentication
 firebase.initializeApp(firebaseConfig);
+
 //create auth reference
 const auth = firebase.auth();
 
 //################# COMMON FUNCTIONS ######################
 
 function UpdateUserDisplay() {
+    //update the text in the top right of the screen to display the current username if the user is logged in, or a link to log in otherwise
     let userDisplay = document.getElementById("current-user");
     let loginLink = document.getElementById("show-login-link");
     let loggedInLinks = document.getElementById("logged-in-links");
@@ -29,6 +30,9 @@ function UpdateUserDisplay() {
 }
 
 function ShowLoginMessage(err, level) {
+    //add a message with text from err to the bottom of the login box
+    //the value of level controls how this message is displayed
+    //the options for level are detailed in config.js
     let loginMessageBox = document.getElementById("login-message-box");
 
     document.getElementById("login-box").classList.add("showLoginMessage");
@@ -57,6 +61,7 @@ function ShowLoginMessage(err, level) {
 }
 
 function UnshowLoginMessage() {
+    //remove a previously displayed login message from the DOM
     document.getElementById("login-box").classList.remove("showLoginMessage");
 
     let loginMessageBox = document.getElementById("login-message-box");
@@ -69,6 +74,7 @@ function UnshowLoginMessage() {
 //################# LOGIN FUNCTIONS #######################
 
 function ShowLogin() {
+    //display the login box (which contains login fields by default, but can also contain signup fields)
     let template = document.getElementsByTagName("template")[0];
     let login = template.content.getElementById("login").cloneNode(true);
     document.body.appendChild(login);
@@ -77,12 +83,16 @@ function ShowLogin() {
 }
 
 function UnshowLogin() {
+    //remove the login box from the DOM
     document.body.classList.remove("noScroll");
     let login = document.getElementById("login");
     login.remove();
 }
 
 function Login() {
+    //attempt logging in the user with the provided credentials
+    //if login is successful, then UpdateUserDisplay, LoadSiteList, LoadSensorTable, and UnshowLogin
+    //otherwise, display an error to the user
     let form = document.getElementById("login-form");
 
     let user = form.elements.user.value;
@@ -135,6 +145,7 @@ function Login() {
 }
 
 function Logout() {
+    //log the current user out locally and on the server, then reload the page
     auth.signOut().then(()=> {
         window.location.reload();
     });
@@ -143,6 +154,7 @@ function Logout() {
 //################# SIGNUP FUNCTIONS ######################
 
 function ShowSignup() {
+    //replace the contents of the login box (which should already be visible) with the fields necessary to sign up a new user
     let loginForm = document.getElementById("login-form");
     let signupForm = document.getElementById("signup-form");
 
@@ -168,6 +180,7 @@ function ShowSignup() {
 }
 
 function UnshowSignup() {
+    //replace the contents of the login box [which should already be both visible and full of signup fields due to ShowSignup()] with its original login fields
     let loginForm = document.getElementById("login-form");
     let signupForm = document.getElementById("signup-form");
 
@@ -193,6 +206,7 @@ function UnshowSignup() {
 }
 
 async function CreateNewUser(user) {
+    //attempt to add a new user to the database. They must have already been created with Firebase using Signup()
     let email = encodeURIComponent(user);
 
     let queryString = `email=${email}`;
@@ -206,6 +220,8 @@ async function CreateNewUser(user) {
 }
 
 function Signup() {
+    //add a new user to Firebase
+    //CreateNewUser should be called after signing up a new user to add them to the local database
     let form = document.getElementById("signup-form");
 
     let user = form.elements.user.value;
@@ -245,7 +261,7 @@ function Signup() {
 
         Log(level.DEBUG, `Successful registration for user ${user}`);
 
-        auth.setPersistence("session");
+        auth.setPersistence("session"); //user is automatically logged in after account creation
 
         CreateNewUser(user);    //add user to site database
 
@@ -257,6 +273,7 @@ function Signup() {
 //################# PASSWORD RESET FUNCTIONS ##############
 
 function RequestPasswordReset() {
+    //send a password reset code to the requested user's email address
     let loginForm = document.getElementById("login-form");
     let resetForm = document.getElementById("reset-form");
     let user = loginForm.elements.user.value;
@@ -297,6 +314,7 @@ function RequestPasswordReset() {
 }
 
 function ConfirmPasswordReset() {
+    //attempt to validate a password reset code requested using RequestPasswordReset()
     let loginForm = document.getElementById("login-form");
     let resetForm = document.getElementById("reset-form");
 
@@ -355,6 +373,7 @@ function ConfirmPasswordReset() {
 }
 
 function UnshowReset() {
+    //replace the contents of the login box with the login form, hiding the password reset form
     let loginForm = document.getElementById("login-form");
     let resetForm = document.getElementById("reset-form");
 

@@ -1,11 +1,35 @@
 @media (max-width: 600px) {
+    /* Mobile */
     div#login-box {
         width: 100%;
     }
+    div#data-chart {
+        width: 100%;
+    }
+    div#data-chart-sidebar {
+        text-align: center;
+    }
 }
 @media (min-width: 600px) {
+    /* Desktop */
     div#login-box {
         width: 500px;
+    }
+    div#data-chart {
+        width: 80vw;
+        position: fixed;
+        left: 0px;
+    }
+    div#data-chart-sidebar {
+        text-align: center;
+        position: fixed;
+        right: 0px;
+        float: right;
+        width: 20vw;
+        padding-top: 25px;
+    }
+    div#data-chart-sidebar input {
+        width: 15ch;
     }
 }
 body {
@@ -30,8 +54,8 @@ footer {
 header {
     top: 0px;
     background-color: #ccc;
-    position: sticky;
     position: -webkit-sticky;
+    position: sticky;
     font-size: larger;
     font-weight: bolder;
 }
@@ -64,6 +88,11 @@ nav {
 main {
     width: 80vw;
     margin: 2vh auto;
+}
+form#add-new-trigger {
+    background-color: #ddd;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 footer {
     background-color: #eee;
@@ -137,7 +166,6 @@ form.accountForm input[type="checkbox"] {
     width: 4ch;
 }
 div#data-chart {
-    width: 100%;
     min-height: 400px;
     height: 60vh;
 }
@@ -174,6 +202,10 @@ div#loading-box {
 }
 canvas {
     padding: 0;
+}
+ul {
+    padding-left: 0px;
+    text-align: left;
 }
 @keyframes loading {
     from {
