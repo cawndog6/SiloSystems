@@ -406,10 +406,16 @@ async function ViewSensor(event) {
 
     return await GetSensorData(currentSite.split("_")[1], idParts[2]).then((response)=> {
         document.getElementById("update-chart-options").classList.remove("hidden");
+        let chartOptionsForm = document.getElementById("update-chart-options");
+        chartOptionsForm.elements.rangeStartDatetime.value = (new Date(response.data[0].date_time)).toISOString().substring(0,16);
+        chartOptionsForm.elements.rangeEndDatetime.value = (new Date(response.data[response.data.length-1].date_time)).toISOString().substring(0,16);
         DrawLineChart(response.data.map(row => [new Date(row.date_time), row.reading]), "Date", response.parameter_name, "100%", "400px", (response.parameter_name.indexOf("%") > -1 ? "percent" : "decimal"));
         refreshHandler = async ()=>{
             return await GetSensorData(currentSite.split("_")[1], idParts[2]).then((response)=> {
-                DrawLineChart(response.data.map(row => [new Date(row.date_time), row.reading]), "Date", response.parameter_name, "100%", "400px", (response.parameter_name.indexOf("%") > -1 ? "percent" : "decimal"));
+                let chartOptionsForm = document.getElementById("update-chart-options");
+                let startDate = new Date(chartOptionsForm.elements.rangeStartDatetime.value);
+                let endDate = new Date(chartOptionsForm.elements.rangeEndDatetime.value);
+                DrawLineChart(response.data.filter(row => new Date(row.date_time) >= startDate && new Date(row.date_time) <= endDate).map(row => [new Date(row.date_time), row.reading]), "Date", response.parameter_name, "100%", "400px", (response.parameter_name.indexOf("%") > -1 ? "percent" : "decimal"));
             });
         };
         currentInterval = setInterval(refreshHandler, refreshFrequency);
@@ -442,7 +448,7 @@ async function DownloadSensor(event) {
 }
 
 function UpdateChartOptions(event) {
-    //update refresh frequency based on user input by canceling and resetting interval
+    //update refresh frequency and/or date range based on user input by canceling and resetting interval
     let form = event.target;
 
     refreshFrequency = form.elements.refreshFrequency.value;

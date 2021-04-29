@@ -28,9 +28,6 @@
         width: 20vw;
         padding-top: 25px;
     }
-    div#data-chart-sidebar input {
-        width: 15ch;
-    }
 }
 body {
     margin: 0px;

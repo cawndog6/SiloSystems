@@ -59,21 +59,21 @@
             </table>
             <div id="data-chart"></div>
             <div id="data-chart-sidebar" class="hidden">
-                <form id="update-chart-options" onsubmit="UpdateChartOptions(event);" class="hidden">
+                <form id="update-chart-options" action="#" onsubmit="UpdateChartOptions(event); return false" class="hidden">
                     <strong>Options</strong>
                     <br>
                     <label>Refresh frequency (sec):<br><input type="number" name="refreshFrequency" value="10" min="1" max="300"></label>
                     <br><br>
-                    <!-- <label>Display range:<br><input type="datetime" name="rangeStartDatetime"><br>to<br><input type="datetime" name="rangeEndDatetime"></label>
-                    <br><br> -->
-                    <input type="submit" value="Apply and reload">
+                    <label>Display range:<br><input type="datetime-local" name="rangeStartDatetime"><br>to<br><input type="datetime-local" name="rangeEndDatetime"></label>
+                    <br><br>
+                    <input type="submit" value="Apply">
                     <br><br>
                 </form>
                 <strong>Triggers currently set:</strong>
                 <br><div id="current-triggers">
                 </div>
                 <a href="#" onclick="document.getElementById('add-new-trigger').classList.toggle('hidden')">Add new trigger +</a>
-                <form id="add-new-trigger" onsubmit="CreateTrigger(event); return false;" class="hidden">
+                <form id="add-new-trigger" action="#" onsubmit="CreateTrigger(event); return false;" class="hidden">
                     When <select id="trigger-device-params">
                     </select>
                     <br>
