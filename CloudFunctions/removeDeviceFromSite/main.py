@@ -7,6 +7,7 @@
 #output: returns status code 500 if server cannot create new site or 200 on success
 import sqlalchemy
 import pymysql
+import os
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()

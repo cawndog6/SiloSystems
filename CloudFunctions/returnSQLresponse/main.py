@@ -5,6 +5,7 @@
 #input: sensor & deviceID
 import pymysql
 import sqlalchemy
+import os
 from flask import escape
 import firebase_admin
 from firebase_admin import auth
