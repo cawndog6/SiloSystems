@@ -6,6 +6,7 @@
 #output: returns status code 400 if input is invalid or 200 on success
 import sqlalchemy
 import pymysql
+import os
 import firebase_admin
 from firebase_admin import auth
 

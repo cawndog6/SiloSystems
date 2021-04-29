@@ -7,6 +7,7 @@
 #output: returns status code 400 if bad request, 500 if user is not authorized or 200 on success
 import pymysql
 import sqlalchemy
+import os
 import firebase_admin
 from firebase_admin import auth
 default_app = firebase_admin.initialize_app()
