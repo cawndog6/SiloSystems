@@ -38,7 +38,7 @@ if (args[0] == 'signout') {
         const userJSON = JSON.parse(data)
         const user = new firebase.User(userJSON, userJSON.stsTokenManager, userJSON);
         auth.updateCurrentUser(user).then(function() {
-          //if there is data, attempt to validate it and get an idToken to use for API calls. If data is bad or DNE, call signUserIn to get valid data
+          //if there is data, attempt to validate it before signing out
           if(auth.currentUser) { 
             firebase.auth().signOut().then(() => {
               // Sign-out successful.

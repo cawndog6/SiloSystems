@@ -17,11 +17,12 @@ else
     echo node $nodeStatus
 fi
 
-firebaseStatus=$(npm list --depth=0 | grep firebase)
-if [ -z "firebaseStatus" ]
-then 
-    sudo npm install firebase
-else
+firebaseStatus=$(npm list firebase | grep "UNMET DEPENDENCY")
+if [ -z "$nodeStatus" ] || [ -n "$nodeStatus" ]
+then
+    npm install firebase
+else 
+    firebaseStatus=$(npm list firebase --depth=0 | grep "firebase")
     echo $firebaseStatus
 fi
 
