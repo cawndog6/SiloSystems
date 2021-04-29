@@ -80,128 +80,6 @@ def main():
     logOutItem = FunctionItem(text="Log Out (" + config.email + ")", args=[menu], function=signOut)
     menu.append_item(logOutItem)
     menu.show()
-def tokenUpdater():
-    while True:
-        time.sleep(3480)
-        os.system("node signin.js")
-        f = open(".idToken.txt", "r")
-        config.tokenId = f.read()
-        config.header = {"Authorization": "Bearer {}".format(config.tokenId)}
-        f.close
-
-def refreshConfig():
-    config.header = {"Authorization": "Bearer {}".format(config.tokenId)}
-    r = requests.get('https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites', headers=config.header)
-    if not r.ok:
-        if r.status_code == 500:
-            availableSites = r.text
-    else: 
-       config.availableSites = r.json()
-    if config.availableSites['result'] is not None:
-        for s in config.availableSites['result']:
-            r = requests.get('https://us-west2-silo-systems-292622.cloudfunctions.net/getDeviceSiteInformation?site_id={}'.format(str(s['site_id'])), headers=config.header)
-            if r.ok:
-                siteDeviceInfo = r.json()
-                for d in siteDeviceInfo['devices']:
-                    if config.serial == d['device_id']:
-                        config.mySiteInfo = s
-                        config.myDeviceInfo = d
-                        config.availableTriggers = siteDeviceInfo['availableTriggers']
-                        config.availableParameters = siteDeviceInfo['availableParameters']
-#Starts the collection/upload of data to the site's database
-def startDataCollectionThread():
-    Screen.clear()
-    config.stopDataCollection = False
-    _thread.start_new_thread(dataCollection, ()) 
-    dataCollectionMenu = ConsoleMenu(title="Lab Companion", subtitle="Data Collection", prologue_text="Collecting and sending data to site [{}]".format(config.mySiteInfo['site_name']), exit_option_text="Back To Main Menu (Stops Data Collection)")
-    dataCollectionMenu.show()
-    #Above call^ blocks. Unblocks when menu exits. Stop data collection after menu exits
-    stopDataCollectionThread()
-    return
-# Stops the collection/upload of data to the site's database
-def stopDataCollectionThread():
-    config.stopDataCollection = True
-    return
-#collects/uploads data to site database for each added parameter. Also handles triggers 
-def dataCollection():
-    if config.tokenId is None:
-        print("You must be logged in.")
-        time.sleep(3)
-        return
-    for p in config.myDeviceInfo['parameters']:
-        p['errorPrinted'] = False
-    for t in config.myDeviceInfo['triggers']:
-        t['lastTriggerEvent'] = None #used to make sure an email trigger only happens once per hour to prevent flood of emails.
-        t['errorPrinted'] = False
-    paramData = []
-    while True:
-        if config.stopDataCollection == True:
-            config.stopDataCollection = False
-            _thread.exit()
-        for p in config.myDeviceInfo['parameters']:
-            parameterEntry = {}
-            parameterName = p['parameter_name']
-            parameterEntry['parameter_name'] = p['parameter_name']
-            parameterEntry['parameter_id'] = p['parameter_id']
-            parameterEntry['readings'] = []
-            parameterEntry['date_time'] = str(datetime.datetime.now())
-            #os.system("python3 " + "scripts/" + parameterName + ".py" + "&> ./data/null")
-            os.system("python3 " + "scripts/" + parameterName + ".py")
-            try:
-                f = open("data/" + parameterName + ".txt", "r")
-                contents = json.loads(f.read())
-                for c in contents:
-                    parameterEntry['readings'].append(c)
-                    paramData.append(parameterEntry)
-                requestHeader = config.header
-                requestHeader['content-type'] = 'application/json'
-                r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/upstreamHandler?site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" + str(config.myDeviceInfo['device_id']), json=paramData, headers=requestHeader)
-                if not r.ok:
-                    print(r.text)
-                for t in config.myDeviceInfo['triggers']:
-                    if t['parameter_id'] == parameterEntry['parameter_id']:
-                        triggered = False
-                        if t['relation_to_reading'] == ">":
-                            if parameterEntry['readings'][0] > t['reading_value']:
-                                triggered = True
-                        elif t['relation_to_reading'] == ">=":
-                            if parameterEntry['readings'][0] >= t['reading_value']:
-                                triggered = True
-                        elif t['relation_to_reading'] == "<":
-                            if parameterEntry['readings'][0] < t['reading_value']:
-                                triggered = True
-                        elif t['relation_to_reading'] == "<=":
-                            if parameterEntry['readings'][0] <= t['reading_value']:
-                                triggered = True
-                        elif t['relation_to_reading'] == "==":
-                            if parameterEntry['readings'][0] == t['reading_value']:
-                                triggered = True
-                        if triggered:
-                            currentTime = time.time()
-                            if t['lastTriggerEvent'] is None or currentTime >= t['lastTriggerEvent'] +  3600:
-                                _thread.start_new_thread(handleTrigger, (t, parameterEntry['readings'][0])) #process the trigger. Do it in a thread so it doesnt hold up the current thread.
-            except:
-                if p['errorPrinted'] == False:
-                    print("""Error: Cannot read parameter data for {}. Ensure that there exists a python script in scripts/ that writes to a file in data/ 
-                        containing the data reading for the parameter. Both the script and file should have the exact same name as the parameter.""" .format(p['parameter_name']))
-                    p['errorPrinted'] = True
-        paramData = [] #reset json string
-        time.sleep(1)
-
-def handleTrigger(trigger, latestReading):
-    trigger['trigger_type'] = trigger['trigger_type'].lower()
-    if trigger['trigger_type'] == "function":
-        trigger['lastTriggerEvent'] = None #a function trigger should always fire, so keep this value "None". 
-        result = os.system("python3 " + "triggers/" + trigger['action'] + ".py" + "&> ./data/null")
-        if result != 0 and trigger['errorPrinted'] is False:
-            print("Error calling function for trigger " + trigger['trigger_name'] + ".")
-            print("Ensure a Python script exists with the name " + trigger['action'] + " in the directory src/triggers/.")
-            trigger['errorPrinted'] == True
-    elif trigger['trigger_type'] == "email":
-        trigger['lastTriggerEvent'] = time.time() #an email trigger should only fire once per hour, so give this a value
-        requestHeader = config.header
-        requestHeader['content-type'] = 'application/json'
-        r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/handleEmailTrigger?device_name=" + str(config.myDeviceInfo['device_name']) + "&current_reading=" + str(latestReading), json=trigger, headers=requestHeader)
 #displays menu with list of available sites to add the Pi to
 def addDeviceToSite(settingsSubmenu):
     Screen.clear()
@@ -226,6 +104,7 @@ def addDeviceToSite(settingsSubmenu):
     selectedSite = addDeviceSubmenu.selected_item
     if addDeviceSubmenu.is_selected_item_exit() != True:
         if config.mySiteInfo is not None:
+            #The device is already connected to a site, so remove the device from its current site to connect it with the new site
             decisionMenu = SelectionMenu(strings=["Yes", "No"], title="WARNING:", prologue_text="This action will remove this device from its current site [" + config.mySiteInfo['site_name'] + "]. All data from this device will be erased on the site's database. Do you want to continue?", show_exit_option=False)
             decisionMenu.show()
             decision = decisionMenu.selected_item
@@ -243,9 +122,9 @@ def addDeviceToSite(settingsSubmenu):
                     if r.ok:
                         refreshConfig()
                     else:
-                        print("Error: Add device to site failed.")
+                        print("Error: Add device to site failed. Make sure you are the owner of this site.")
                         print(r.text)
-                        time.sleep(4)
+                        time.sleep(5)
                     itemsList = []
                     for i in settingsSubmenu.items:
                         itemsList.append(i)
@@ -257,10 +136,10 @@ def addDeviceToSite(settingsSubmenu):
                     settingsSubmenu.append_item(FunctionItem("Configure this device's parameters", configureParameters))
                     settingsSubmenu.append_item(FunctionItem("Configure this device's triggers", configureTriggers))
                     settingsSubmenu.parent.prologue_text = "Connected to site [" + config.mySiteInfo['site_name'] + "]" + " as [" + config.myDeviceInfo['device_name'] + "]"
-                    
                 else:
                     print(r.text)
         else:
+            #The device is not already connected to a site. It only needs to be added to a new site.
             for s in config.availableSites['result']:
                 if s['site_name'] == selectedSite.text:
                     siteId = s['site_id']
@@ -268,7 +147,7 @@ def addDeviceToSite(settingsSubmenu):
             r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/addDeviceToSite?" + "site_id=" + str(siteId) + "&device_name=" + newName + "&device_id=" + str(config.serial), headers=config.header)
             print("\nAdding device to site...")
             if not r.ok:
-                print("Error: Add device to site failed.")
+                print("Error: Add device to site failed. Make sure you are the owner of this site.")
                 print(r.text)
                 time.sleep(5)
             else:
@@ -284,8 +163,123 @@ def addDeviceToSite(settingsSubmenu):
                 settingsSubmenu.append_item(FunctionItem("Configure this device's parameters", configureParameters))
                 settingsSubmenu.append_item(FunctionItem("Configure this device's triggers", configureTriggers))
                 settingsSubmenu.parent.prologue_text = "Connected to site [" + config.mySiteInfo['site_name'] + "]" + " as [" + config.myDeviceInfo['device_name'] + "]"
-    #menu.prologue_text = "hi"
     #menu.draw()
+# Removes this device from the site
+def removeDeviceFromSite():
+    Screen.clear()
+    if config.tokenId is None:
+        print("You must be logged in.")
+        time.sleep(3)
+        return
+    r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/removeDeviceFromSite?" + "site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" + str(config.serial), headers=config.header)
+    print("\nAdding device...")
+    if not r.ok:
+        print(r.text)
+        time.sleep(4)
+    return r
+def configureParameters():
+    if config.tokenId is None:
+        print("You must be logged in.")
+        time.sleep(3)
+        return
+    if config.mySiteInfo is None:
+        print("Connect this device to a site before configuring parameters")
+        time.sleep(3)
+        return
+    addParamMenu = ConsoleMenu(title="Lab Companion", subtitle="Device Parameter Settings", exit_option_text="Return to Device Settings")
+    if not config.myDeviceInfo['parameters']:
+        addParamMenu.prologue_text = "No parameters are currently attached."
+    else:
+        addParamMenu.prologue_text = "Attached parameter(s):  "
+        first = True
+        for p in config.myDeviceInfo['parameters']:
+            if first:
+                addParamMenu.prologue_text = addParamMenu.prologue_text + p['parameter_name']
+                first = False
+            else:
+                addParamMenu.prologue_text = addParamMenu.prologue_text + ", " + p['parameter_name']
+    addParamMenu.append_item(FunctionItem("Add a parameter to this device", args=[addParamMenu], function=addNewParam))
+    addParamMenu.append_item(FunctionItem("Remove a parameter from this device", args=[addParamMenu], function=removeParam))
+    addParamMenu.show()
+# Create and/or add a new parameter to this device.
+def addNewParam(menu): 
+    availableParams = []
+    for t in config.availableParameters:
+        if not any(attached['parameter_id'] == t['parameter_id'] for attached in config.myDeviceInfo['parameters']):
+            availableParams.append(t['parameter_name'])
+    availableParams.append("Create New Parameter")
+    addParamMenu = SelectionMenu(strings=availableParams, title="Lab Companion", subtitle="Add parameter to this device", exit_option_text="Return to Parameter Settings")
+    if not config.availableParameters:
+        addParamMenu.prologue_text = "No available parameters. Select Create New Parameter to create one and add it to this device."
+    else:
+        addParamMenu.prologue_text = "Select a parameter to add to this device or select Create New Parameter to create one and add it to this device. "
+    addParamMenu.show()
+    selectedParam = addParamMenu.selected_item
+    if addParamMenu.is_selected_item_exit() != True:
+        if selectedParam.text == "Create New Parameter":
+            #input: site_id, device_id, uid, parameter_name, data_val, data_type
+            paramName = input("Enter a name for the new parameter: ")
+            dataType = input("Enter this parameters data type (The mySQL data type eg. INTEGER, VARCHAR(20), etc) ")
+            choice = input("Is the above information correct? Enter \"yes\" to add this parameter to the site or \"no\" to return to the Parameter Configuration Menu. ")
+            if choice.lower() == "yes":
+                dataType = dataType.upper()
+                r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/addParameterToDevice?parameter_name=" + paramName + "&data_type=" + dataType + "&site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" +  str(config.myDeviceInfo['device_id']) + "&parameter_exists=false", headers=config.header)
+            else:
+                return
+        else:
+            paramName = selectedParam.text
+            r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/addParameterToDevice?parameter_name=" + paramName + "&site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" +  str(config.myDeviceInfo['device_id']) + "&parameter_exists=true", headers=config.header)
+        print("Adding parameter...")
+        refreshConfig()
+        if not r.ok:
+            print(r.text)
+            time.sleep(4)
+        if not config.myDeviceInfo['parameters']:
+            menu.prologue_text = "No parameters are currently attached."
+        else:
+            menu.prologue_text = "Attached parameter(s):  "
+            first = True
+            for p in config.myDeviceInfo['parameters']:
+                if first:
+                    menu.prologue_text = menu.prologue_text + p['parameter_name']
+                    first = False
+                else:
+                    menu.prologue_text = menu.prologue_text + ", " + p['parameter_name']
+#Remove a parameter from this device
+def removeParam(menu):
+    Screen.clear()
+    if not config.myDeviceInfo['parameters']:
+        print("No parameters are currently attached to this device.")
+        time.sleep(4)
+        return
+    else:
+        deviceParams = []
+        for p in config.myDeviceInfo['parameters']:
+            deviceParams.append(p['parameter_name'])
+    removeParamMenu = SelectionMenu(strings=deviceParams, title="Choose a parameter to remove from this device")
+    removeParamMenu.show()
+    selectedParam = removeParamMenu.selected_item
+    if removeParamMenu.is_selected_item_exit() != True:
+        for p in config.myDeviceInfo['parameters']:
+            if p['parameter_name'] == selectedParam.text:
+                paramId = p['parameter_id']
+        r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/removeParameterFromDevice?parameter_id=" + str(paramId) + "&site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" +  str(config.myDeviceInfo['device_id']), headers = config.header)
+        print("Removing parameter...")
+        if not r.ok:
+            print("Error: " + r.text)
+            time.sleep(4)
+        refreshConfig()
+    if not config.myDeviceInfo['parameters']:
+        menu.prologue_text = "No parameters are currently attached."
+    else:
+        menu.prologue_text = "Attached parameter(s):  "
+        first = True
+        for p in config.myDeviceInfo['parameters']:
+            if first:
+                menu.prologue_text = menu.prologue_text + p['parameter_name']
+                first = False
+            else:
+                menu.prologue_text = menu.prologue_text + ", " + p['parameter_name']
 def configureTriggers():
     if config.tokenId is None:
         print("You must be logged in.")
@@ -424,6 +418,7 @@ def deleteTrigger(trigMenu):
         for t in config.availableTriggers:
             if t['trigger_name'] == selectedTrig.text:
                 trigger_id = t['trigger_id']
+        # warn user their device will be removed from current site and all data recorded from this device will be deleted
         decisionMenu = SelectionMenu(strings=["Yes", "No"], title="WARNING:", prologue_text="This action will delete this trigger from site [" + config.mySiteInfo['site_name'] + "]. It will be removed from all devices it is attached to. Do you want to continue?", show_exit_option=False)
         decisionMenu.show()
         decision = decisionMenu.selected_item
@@ -444,136 +439,6 @@ def deleteTrigger(trigMenu):
                         first = False
                     else:
                         trigMenu.prologue_text = trigMenu.prologue_text + ", " + t['trigger_name']
-# Removes this device from the site
-def removeDeviceFromSite():
-    Screen.clear()
-    if config.tokenId is None:
-        print("You must be logged in.")
-        time.sleep(3)
-        return
-    r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/removeDeviceFromSite?" + "site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" + str(config.serial), headers=config.header)
-    print("\nAdding device...")
-    if not r.ok:
-        print(r.text)
-        time.sleep(2)
-    return r
-def configureParameters():
-    if config.tokenId is None:
-        print("You must be logged in.")
-        time.sleep(3)
-        return
-    if config.mySiteInfo is None:
-        print("Connect this device to a site before configuring parameters")
-        time.sleep(3)
-        return
-    addParamMenu = ConsoleMenu(title="Lab Companion", subtitle="Device Parameter Settings", exit_option_text="Return to Device Settings")
-    if not config.myDeviceInfo['parameters']:
-        addParamMenu.prologue_text = "No parameters are currently attached."
-    else:
-        addParamMenu.prologue_text = "Attached parameter(s):  "
-        first = True
-        for p in config.myDeviceInfo['parameters']:
-            if first:
-                addParamMenu.prologue_text = addParamMenu.prologue_text + p['parameter_name']
-                first = False
-            else:
-                addParamMenu.prologue_text = addParamMenu.prologue_text + ", " + p['parameter_name']
-    addParamMenu.append_item(FunctionItem("Add a parameter to this device", args=[addParamMenu], function=addNewParam))
-    addParamMenu.append_item(FunctionItem("Remove a parameter from this device", args=[addParamMenu], function=removeParam))
-    addParamMenu.show()
-# Create and/or add a new parameter to this device.
-def addNewParam(menu): 
-    availableParams = []
-    for t in config.availableParameters:
-        if not any(attached['parameter_id'] == t['parameter_id'] for attached in config.myDeviceInfo['parameters']):
-            availableParams.append(t['parameter_name'])
-    availableParams.append("Create New Parameter")
-    addParamMenu = SelectionMenu(strings=availableParams, title="Lab Companion", subtitle="Add parameter to this device", exit_option_text="Return to Parameter Settings")
-    if not config.availableParameters:
-        addParamMenu.prologue_text = "No available parameters. Select Create New Parameter to create one and add it to this device."
-    else:
-        addParamMenu.prologue_text = "Select a parameter to add to this device or select Create New Parameter to create one and add it to this device. "
-    addParamMenu.show()
-    selectedParam = addParamMenu.selected_item
-    if addParamMenu.is_selected_item_exit() != True:
-        if selectedParam.text == "Create New Parameter":
-            #input: site_id, device_id, uid, parameter_name, data_val, data_type
-            paramName = input("Enter a name for the new parameter: ")
-            dataType = input("Enter this parameters data type (The mySQL data type eg. INTEGER, VARCHAR(20), etc) ")
-            choice = input("Is the above information correct? Enter \"yes\" to add this parameter to the site or \"no\" to return to the Parameter Configuration Menu. ")
-            if choice.lower() == "yes":
-                dataType = dataType.upper()
-                r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/addParameterToDevice?parameter_name=" + paramName + "&data_type=" + dataType + "&site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" +  str(config.myDeviceInfo['device_id']) + "&parameter_exists=false", headers=config.header)
-            else:
-                return
-        else:
-            paramName = selectedParam.text
-            r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/addParameterToDevice?parameter_name=" + paramName + "&site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" +  str(config.myDeviceInfo['device_id']) + "&parameter_exists=true", headers=config.header)
-        print("Adding parameter...")
-        refreshConfig()
-        if not r.ok:
-            print(r.text)
-            time.sleep(4)
-        if not config.myDeviceInfo['parameters']:
-            menu.prologue_text = "No parameters are currently attached."
-        else:
-            menu.prologue_text = "Attached parameter(s):  "
-            first = True
-            for p in config.myDeviceInfo['parameters']:
-                if first:
-                    menu.prologue_text = menu.prologue_text + p['parameter_name']
-                    first = False
-                else:
-                    menu.prologue_text = menu.prologue_text + ", " + p['parameter_name']
-#Remove a parameter from this device
-def removeParam(menu):
-    Screen.clear()
-    if not config.myDeviceInfo['parameters']:
-        print("No parameters are currently attached to this device.")
-        time.sleep(4)
-        return
-    else:
-        deviceParams = []
-        for p in config.myDeviceInfo['parameters']:
-            deviceParams.append(p['parameter_name'])
-    removeParamMenu = SelectionMenu(strings=deviceParams, title="Choose a parameter to remove from this device")
-    removeParamMenu.show()
-    selectedParam = removeParamMenu.selected_item
-    if removeParamMenu.is_selected_item_exit() != True:
-        for p in config.myDeviceInfo['parameters']:
-            if p['parameter_name'] == selectedParam.text:
-                paramId = p['parameter_id']
-        r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/removeParameterFromDevice?parameter_id=" + str(paramId) + "&site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" +  str(config.myDeviceInfo['device_id']), headers = config.header)
-        print("Removing parameter...")
-        if not r.ok:
-            print("Error: " + r.text)
-            time.sleep(4)
-        refreshConfig()
-    if not config.myDeviceInfo['parameters']:
-        menu.prologue_text = "No parameters are currently attached."
-    else:
-        menu.prologue_text = "Attached parameter(s):  "
-        first = True
-        for p in config.myDeviceInfo['parameters']:
-            if first:
-                menu.prologue_text = menu.prologue_text + p['parameter_name']
-                first = False
-            else:
-                menu.prologue_text = menu.prologue_text + ", " + p['parameter_name']
-#Sign a user out of their Firebase Account
-def signOut(menu):
-    Screen.clear()
-    os.system("node signin.js signout")
-    menu.remove_item(menu.selected_item)
-    menu.append_item(FunctionItem("Log In", args=[menu], function=signIn))
-    config.email = None
-    config.tokenId = None
-    config.myDeviceInfo = None
-    config.mySiteInfo = None
-    config.availableSites = None
-    #menu.show()
-    menu.prologue_text = "Sign into your Lab Companion account"
-    menu.draw()
 # Sign a user into their Firebase Account
 def signIn(menu):
     Screen.clear()
@@ -602,6 +467,143 @@ def signIn(menu):
     else:
         menu.prologue_text = "No sites are available for this user. Create a site on the web application to connect this device to."
     menu.draw()
+#Sign a user out of their Firebase Account
+def signOut(menu):
+    Screen.clear()
+    os.system("node signin.js signout")
+    menu.remove_item(menu.selected_item)
+    menu.append_item(FunctionItem("Log In", args=[menu], function=signIn))
+    config.email = None
+    config.tokenId = None
+    config.myDeviceInfo = None
+    config.mySiteInfo = None
+    config.availableSites = None
+    #menu.show()
+    menu.prologue_text = "Sign into your Lab Companion account"
+    menu.draw()
+#refresh config.py file
+def refreshConfig():
+    config.header = {"Authorization": "Bearer {}".format(config.tokenId)}
+    r = requests.get('https://us-west2-silo-systems-292622.cloudfunctions.net/getAvailableSites', headers=config.header)
+    if not r.ok:
+        if r.status_code == 500:
+            availableSites = r.text
+    else: 
+       config.availableSites = r.json()
+    if config.availableSites is not None:
+        for s in config.availableSites['result']:
+            r = requests.get('https://us-west2-silo-systems-292622.cloudfunctions.net/getSiteDeviceInformation?site_id={}'.format(str(s['site_id'])), headers=config.header)
+            if r.ok:
+                siteDeviceInfo = r.json()
+                for d in siteDeviceInfo['devices']:
+                    if config.serial == d['device_id']:
+                        config.mySiteInfo = s
+                        config.myDeviceInfo = d
+                        config.availableTriggers = siteDeviceInfo['availableTriggers']
+                        config.availableParameters = siteDeviceInfo['availableParameters']
+#updates token every 58 minutes
+def tokenUpdater():
+    while True:
+        time.sleep(3480)
+        os.system("node signin.js")
+        f = open(".idToken.txt", "r")
+        config.tokenId = f.read()
+        config.header = {"Authorization": "Bearer {}".format(config.tokenId)}
+        f.close
+#Starts the collection/upload of data to the site's database
+def startDataCollectionThread():
+    Screen.clear()
+    config.stopDataCollection = False
+    _thread.start_new_thread(dataCollection, ()) 
+    dataCollectionMenu = ConsoleMenu(title="Lab Companion", subtitle="Data Collection", prologue_text="Collecting and sending data to site [{}]".format(config.mySiteInfo['site_name']), exit_option_text="Back To Main Menu (Stops Data Collection)")
+    dataCollectionMenu.show()
+    #Above call^ blocks. Unblocks when menu exits. Stop data collection after menu exits
+    stopDataCollectionThread()
+    return
+# Stops the collection/upload of data to the site's database
+def stopDataCollectionThread():
+    config.stopDataCollection = True
+    return
+#collects/uploads data to site database for each added parameter. Also handles triggers 
+def dataCollection():
+    if config.tokenId is None:
+        print("You must be logged in.")
+        time.sleep(3)
+        return
+    for p in config.myDeviceInfo['parameters']:
+        p['errorPrinted'] = False
+    for t in config.myDeviceInfo['triggers']:
+        t['lastTriggerEvent'] = None #used to make sure an email trigger only happens once per hour to prevent flood of emails.
+        t['errorPrinted'] = False
+    paramData = []
+    while True:
+        if config.stopDataCollection == True:
+            config.stopDataCollection = False
+            _thread.exit()
+        for p in config.myDeviceInfo['parameters']:
+            parameterEntry = {}
+            parameterName = p['parameter_name']
+            parameterEntry['parameter_name'] = p['parameter_name']
+            parameterEntry['parameter_id'] = p['parameter_id']
+            parameterEntry['readings'] = []
+            parameterEntry['date_time'] = str(datetime.datetime.now())
+            #os.system("python3 " + "scripts/" + parameterName + ".py" + "&> ./data/null")
+            os.system("python3 " + "scripts/" + parameterName + ".py")
+            try:
+                f = open("data/" + parameterName + ".txt", "r")
+                contents = json.loads(f.read())
+                for c in contents:
+                    parameterEntry['readings'].append(c)
+                    paramData.append(parameterEntry)
+                for t in config.myDeviceInfo['triggers']:
+                    if t['parameter_id'] == parameterEntry['parameter_id']:
+                        triggered = False
+                        if t['relation_to_reading'] == ">":
+                            if parameterEntry['readings'][0] > t['reading_value']:
+                                triggered = True
+                        elif t['relation_to_reading'] == ">=":
+                            if parameterEntry['readings'][0] >= t['reading_value']:
+                                triggered = True
+                        elif t['relation_to_reading'] == "<":
+                            if parameterEntry['readings'][0] < t['reading_value']:
+                                triggered = True
+                        elif t['relation_to_reading'] == "<=":
+                            if parameterEntry['readings'][0] <= t['reading_value']:
+                                triggered = True
+                        elif t['relation_to_reading'] == "==":
+                            if parameterEntry['readings'][0] == t['reading_value']:
+                                triggered = True
+                        if triggered:
+                            currentTime = time.time()
+                            if t['lastTriggerEvent'] is None or currentTime >= t['lastTriggerEvent'] +  3600:
+                                _thread.start_new_thread(handleTrigger, (t, parameterEntry['readings'][0])) #process the trigger. Do it in a thread so it doesnt hold up the current thread.
+            except:
+                if p['errorPrinted'] == False:
+                    print("""Error: Cannot read parameter data for {}. Ensure that there exists a python script in scripts/ that writes to a file in data/ 
+                        containing the data reading for the parameter. Both the script and file should have the exact same name as the parameter.""" .format(p['parameter_name']))
+                    p['errorPrinted'] = True
+        requestHeader = config.header
+        requestHeader['content-type'] = 'application/json'
+        r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/upstreamHandler?site_id=" + str(config.mySiteInfo['site_id']) + "&device_id=" + str(config.myDeviceInfo['device_id']), json=paramData, headers=requestHeader)
+        if not r.ok:
+            print(r.text)
+        paramData = [] #reset json string
+        time.sleep(1)
+
+def handleTrigger(trigger, latestReading):
+    trigger['trigger_type'] = trigger['trigger_type'].lower()
+    if trigger['trigger_type'] == "function":
+        trigger['lastTriggerEvent'] = None #a function trigger should always fire, so keep this value "None". 
+        result = os.system("python3 " + "triggers/" + trigger['action'] + ".py" + "&> ./data/null")
+        if result != 0 and trigger['errorPrinted'] is False:
+            print("Error calling function for trigger " + trigger['trigger_name'] + ".")
+            print("Ensure a Python script exists with the name " + trigger['action'] + " in the directory src/triggers/")
+            trigger['errorPrinted'] == True
+    elif trigger['trigger_type'] == "email":
+        trigger['lastTriggerEvent'] = time.time() #an email trigger should only fire once per hour, so give this a value
+        requestHeader = config.header
+        requestHeader['content-type'] = 'application/json'
+        r = requests.post("https://us-west2-silo-systems-292622.cloudfunctions.net/handleEmailTrigger?device_name=" + str(config.myDeviceInfo['device_name']) + "&current_reading=" + str(latestReading), json=trigger, headers=requestHeader)
 def getserial():
   # Extract serial from cpuinfo file
   cpuserial = "0000000000000000"
