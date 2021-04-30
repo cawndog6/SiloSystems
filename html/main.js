@@ -451,7 +451,7 @@ function UpdateChartOptions(event) {
     //update refresh frequency and/or date range based on user input by canceling and resetting interval
     let form = event.target;
 
-    refreshFrequency = form.elements.refreshFrequency.value;
+    refreshFrequency = form.elements.refreshFrequency.value * 1000; //multiply by 1000 to convert s to ms
 
     clearInterval(currentInterval);
     currentInterval = setInterval(refreshHandler, refreshFrequency);
