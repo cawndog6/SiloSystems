@@ -27,4 +27,7 @@ const apiRoot = "https://us-west2-silo-systems-292622.cloudfunctions.net";
 let refreshFrequency = 10000;
 
 //minimum logging level - any messages at or above this level will be handled; any below this level will be dropped
-let logLevel = level.DEBUG;
+let logLevel = level.WARNING;
+
+//link to the JANUS WebRTC server stream page
+let streamURL = "http://35.212.218.138/EXPO-STREAM.html";

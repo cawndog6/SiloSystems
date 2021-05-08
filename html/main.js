@@ -319,7 +319,7 @@ async function LoadSensorTable() {
 
                 let streamCell = row.insertCell();
                 let streamLink = document.createElement("a");
-                streamLink.href = "http://35.212.218.138/EXPO-STREAM.html"; //TODO this is a generic link - should be made specific to this device's stream
+                streamLink.href = streamURL;
                 streamLink.target = "_blank";
                 streamLink.appendChild(document.createTextNode("View Stream"));
                 streamCell.appendChild(streamLink);
